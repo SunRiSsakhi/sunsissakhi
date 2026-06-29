@@ -263,7 +263,7 @@
     <div id="nav-logged-in" style="display:none;" class="nav-user">
       <div class="nav-avatar" id="nav-avatar">?</div>
       <span class="nav-user-name" id="nav-user-name"></span>
-      <a href="#" class="nav-cta" style="margin-left:0.25rem;" onclick="openModal(); return false;">Write</a>
+      <a href="#" class="nav-cta" style="margin-left:0.25rem;" href="write.html">Write</a>
       <button class="nav-signout" onclick="signOut()">Sign out</button>
     </div>
   </div>
@@ -678,7 +678,7 @@
       openAuthModal('signup');
       return;
     }
-    openModal();
+    window.location.href = 'write.html';
   }
 
   function openModal() {
