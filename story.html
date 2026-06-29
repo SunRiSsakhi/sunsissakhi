@@ -170,6 +170,29 @@
   .like-btn.active-dislike { background: #fef2f2; border-color: #f4a98a; color: #c0623a; }
   .like-label { font-size: 0.875rem; color: var(--text-muted); }
 
+  /* COMMENTS */
+  .comments-section { max-width: 720px; margin: 0 auto; padding: 0 2rem 4rem; }
+  .comments-title { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 500; color: var(--text-dark); margin-bottom: 1.5rem; }
+  .comment-form { background: white; border: 1px solid var(--border-soft); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; }
+  .comment-form textarea { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border-soft); border-radius: 10px; font-size: 0.9375rem; font-family: 'Inter', sans-serif; color: var(--text-dark); background: var(--terra-ivory); outline: none; resize: vertical; min-height: 90px; line-height: 1.6; transition: border-color 0.2s; }
+  .comment-form textarea:focus { border-color: var(--terra-mid); }
+  .comment-form-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 0.75rem; }
+  .comment-form-note { font-size: 0.8125rem; color: var(--text-muted); }
+  .btn-comment { background: var(--terra-mid); color: white; border: none; padding: 9px 22px; border-radius: 100px; font-size: 0.875rem; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.2s; }
+  .btn-comment:hover { background: var(--terra-deep); }
+  .btn-comment:disabled { background: var(--terra-pale); cursor: not-allowed; }
+  .comment-login-note { background: var(--terra-cream); border: 1px solid var(--border-soft); border-radius: 12px; padding: 1rem 1.25rem; font-size: 0.9rem; color: var(--text-mid); margin-bottom: 2rem; }
+  .comment-login-note a { color: var(--terra-mid); text-decoration: none; font-weight: 500; }
+  .comment-login-note a:hover { color: var(--terra-deep); }
+  .comments-list { display: flex; flex-direction: column; gap: 1rem; }
+  .comment-card { background: white; border: 1px solid var(--border-soft); border-radius: 14px; padding: 1.25rem 1.5rem; }
+  .comment-header { display: flex; align-items: center; gap: 0.625rem; margin-bottom: 0.625rem; }
+  .comment-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--terra-pale); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 500; color: var(--terra-deep); flex-shrink: 0; }
+  .comment-author { font-size: 0.875rem; font-weight: 500; color: var(--text-dark); }
+  .comment-date { font-size: 0.75rem; color: var(--text-muted); }
+  .comment-body { font-size: 0.9375rem; color: var(--text-mid); line-height: 1.7; }
+  .no-comments { text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.9375rem; }
+
   /* FOOTER */
   footer { background: var(--text-dark); color: rgba(255,255,255,0.5); padding: 2rem; text-align: center; font-size: 0.8125rem; }
   .footer-logo { font-family: 'Playfair Display', serif; font-size: 1.125rem; color: white; margin-bottom: 0.25rem; }
@@ -195,6 +218,14 @@
     <div class="state-box">
       <p>Loading story...</p>
     </div>
+  </div>
+</div>
+
+<div class="comments-section" id="comments-section" style="display:none;">
+  <h2 class="comments-title">Responses</h2>
+  <div id="comment-form-area"></div>
+  <div class="comments-list" id="comments-list">
+    <p class="no-comments">Loading responses...</p>
   </div>
 </div>
 
@@ -297,6 +328,85 @@
 
 
 
+
+  async function loadComments(storyId) {
+    const { data, error } = await db
+      .from('comments')
+      .select('*')
+      .eq('story_id', storyId)
+      .order('created_at', { ascending: true });
+
+    const list = document.getElementById('comments-list');
+    if (!list) return;
+
+    if (error || !data || data.length === 0) {
+      list.innerHTML = '<p class="no-comments">No responses yet. Be the first to respond.</p>';
+    } else {
+      list.innerHTML = data.map(c => `
+        <div class="comment-card">
+          <div class="comment-header">
+            <div class="comment-avatar">${getInitials(c.author_name)}</div>
+            <span class="comment-author">${c.author_name || 'Anonymous'}</span>
+            <span class="comment-date">${new Date(c.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+          </div>
+          <p class="comment-body">${escapeHtml(c.content)}</p>
+        </div>
+      `).join('');
+    }
+
+    renderCommentForm(storyId);
+    document.getElementById('comments-section').style.display = 'block';
+  }
+
+  function renderCommentForm(storyId) {
+    const area = document.getElementById('comment-form-area');
+    if (!area) return;
+
+    if (!currentUser) {
+      area.innerHTML = `<div class="comment-login-note">Sign in to leave a response. <a href="index.html">Join SunRi-Ssakhi</a></div>`;
+      return;
+    }
+
+    const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+    area.innerHTML = `
+      <div class="comment-form">
+        <textarea id="comment-input" placeholder="Share your thoughts on this story..."></textarea>
+        <div class="comment-form-footer">
+          <span class="comment-form-note">Posting as ${name}</span>
+          <button class="btn-comment" id="comment-btn" onclick="submitComment(${storyId})">Post response</button>
+        </div>
+      </div>
+    `;
+  }
+
+  async function submitComment(storyId) {
+    if (!currentUser) return;
+    const input = document.getElementById('comment-input');
+    const content = input?.value.trim();
+    if (!content) return;
+
+    const btn = document.getElementById('comment-btn');
+    btn.disabled = true;
+    btn.textContent = 'Posting...';
+
+    const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+
+    const { error } = await db.from('comments').insert([{
+      story_id: storyId,
+      user_id: currentUser.id,
+      author_name: name,
+      content: content
+    }]);
+
+    btn.disabled = false;
+    btn.textContent = 'Post response';
+
+    if (!error) {
+      input.value = '';
+      loadComments(storyId);
+    }
+  }
+
   function getInitials(name) {
     if (!name) return '?';
     return name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
@@ -330,6 +440,7 @@
     currentStoryId = data.id;
     renderStory(data);
     setTimeout(() => loadLikes(data.id), 100);
+    setTimeout(() => loadComments(data.id), 150);
   }
 
   function renderStory(s) {
