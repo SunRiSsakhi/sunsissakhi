@@ -739,8 +739,8 @@
             <a class="read-link" href="story.html?id=${s.id}">Read →</a>
           </div>
           <div class="like-bar">
-            <button class="like-btn" id="like-${s.id}" onclick="vote(${s.id}, 1)"><span>♥</span> <span id="lc-${s.id}">0</span></button>
-            <button class="like-btn" id="dislike-${s.id}" onclick="vote(${s.id}, -1)"><span>✕</span> <span id="dc-${s.id}">0</span></button>
+            <button class="like-btn" id="like-${s.id}" onclick="vote(${s.id}, 1)"><span>👍</span> <span id="lc-${s.id}">0</span></button>
+            <button class="like-btn" id="dislike-${s.id}" onclick="vote(${s.id}, -1)"><span>👎</span> <span id="dc-${s.id}">0</span></button>
           </div>
         </div>
       </div>
@@ -798,7 +798,7 @@
     const token = getGuestToken();
 
     if (isAdminUser) {
-      await db.from('likes').insert([{ story_id: storyId, value, guest_token: token + '_' + Date.now() }]);
+      await db.from('likes').insert([{ story_id: storyId, value, guest_token: 'admin_' + Math.random().toString(36).slice(2) + '_' + Date.now() }]);
       loadLikes(storyId);
       return;
     }
