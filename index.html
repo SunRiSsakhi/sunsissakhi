@@ -177,6 +177,15 @@
 
   /* STORY READ MODAL */
 
+
+  /* LIKES */
+  .like-bar { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border-soft); }
+  .like-btn { display: flex; align-items: center; gap: 4px; background: none; border: 1px solid var(--border-soft); border-radius: 100px; padding: 4px 12px; font-size: 0.8125rem; cursor: pointer; font-family: 'Inter', sans-serif; color: var(--text-muted); transition: all 0.2s; }
+  .like-btn:hover { border-color: var(--terra-light); color: var(--terra-mid); }
+  .like-btn.active-like { background: var(--terra-cream); border-color: var(--terra-mid); color: var(--terra-mid); }
+  .like-btn.active-dislike { background: #fef2f2; border-color: #f4a98a; color: #c0623a; }
+  .like-btn span { font-size: 0.9rem; }
+
   /* TOAST */
   .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--terra-deep); color: white; padding: 14px 24px; border-radius: 100px; font-size: 0.9375rem; z-index: 300; transition: transform 0.3s; pointer-events: none; }
   .toast.show { transform: translateX(-50%) translateY(0); }
@@ -713,7 +722,7 @@
       return;
     }
     grid.innerHTML = stories.map(s => `
-      <div class="story-card">
+      <div class="story-card" id="card-${s.id}">
         <div class="story-card-top"></div>
         <div class="story-card-body">
           <span class="story-lang">${s.language || 'Unknown'}</span>
@@ -729,9 +738,95 @@
             </div>
             <a class="read-link" href="story.html?id=${s.id}">Read →</a>
           </div>
+          <div class="like-bar">
+            <button class="like-btn" id="like-${s.id}" onclick="vote(${s.id}, 1)"><span>♥</span> <span id="lc-${s.id}">0</span></button>
+            <button class="like-btn" id="dislike-${s.id}" onclick="vote(${s.id}, -1)"><span>✕</span> <span id="dc-${s.id}">0</span></button>
+          </div>
         </div>
       </div>
     `).join('');
+    stories.forEach(s => loadLikes(s.id));
+  }
+
+
+  const ADMIN_EMAIL = 'ambica.clc@gmail.com';
+
+  function getGuestToken() {
+    let token = localStorage.getItem('srs_guest_token');
+    if (!token) {
+      token = 'guest_' + Math.random().toString(36).slice(2) + Date.now();
+      localStorage.setItem('srs_guest_token', token);
+    }
+    return token;
+  }
+
+  function isAdmin() {
+    return currentUser && currentUser.email === ADMIN_EMAIL;
+  }
+
+  async function loadLikes(storyId) {
+    const { data } = await db.from('likes').select('value').eq('story_id', storyId);
+    if (!data) return;
+    const likes = data.filter(r => r.value === 1).length;
+    const dislikes = data.filter(r => r.value === -1).length;
+    const lcEl = document.getElementById('lc-' + storyId);
+    const dcEl = document.getElementById('dc-' + storyId);
+    if (lcEl) lcEl.textContent = likes;
+    if (dcEl) dcEl.textContent = dislikes;
+
+    const myVote = await getMyVote(storyId);
+    const likeBtn = document.getElementById('like-' + storyId);
+    const dislikeBtn = document.getElementById('dislike-' + storyId);
+    if (likeBtn) likeBtn.classList.toggle('active-like', myVote === 1);
+    if (dislikeBtn) dislikeBtn.classList.toggle('active-dislike', myVote === -1);
+  }
+
+  async function getMyVote(storyId) {
+    if (currentUser && !isAdmin()) {
+      const { data } = await db.from('likes').select('value').eq('story_id', storyId).eq('user_id', currentUser.id).single();
+      return data?.value || 0;
+    } else if (!currentUser) {
+      const token = getGuestToken();
+      const { data } = await db.from('likes').select('value').eq('story_id', storyId).eq('guest_token', token).single();
+      return data?.value || 0;
+    }
+    return 0;
+  }
+
+  async function vote(storyId, value) {
+    const isAdminUser = isAdmin();
+    const token = getGuestToken();
+
+    if (isAdminUser) {
+      await db.from('likes').insert([{ story_id: storyId, value, guest_token: token + '_' + Date.now() }]);
+      loadLikes(storyId);
+      return;
+    }
+
+    if (currentUser) {
+      const { data: existing } = await db.from('likes').select('id, value').eq('story_id', storyId).eq('user_id', currentUser.id).single();
+      if (existing) {
+        if (existing.value === value) {
+          await db.from('likes').delete().eq('id', existing.id);
+        } else {
+          await db.from('likes').update({ value }).eq('id', existing.id);
+        }
+      } else {
+        await db.from('likes').insert([{ story_id: storyId, user_id: currentUser.id, value }]);
+      }
+    } else {
+      const { data: existing } = await db.from('likes').select('id, value').eq('story_id', storyId).eq('guest_token', token).single();
+      if (existing) {
+        if (existing.value === value) {
+          await db.from('likes').delete().eq('id', existing.id);
+        } else {
+          await db.from('likes').update({ value }).eq('id', existing.id);
+        }
+      } else {
+        await db.from('likes').insert([{ story_id: storyId, guest_token: token, value }]);
+      }
+    }
+    loadLikes(storyId);
   }
 
   async function loadStories() {
