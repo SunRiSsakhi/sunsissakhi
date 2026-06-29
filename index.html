@@ -487,8 +487,10 @@
     updateNavAuth();
     if (currentUser) {
       const meta = currentUser.user_metadata;
-      document.getElementById('f-name').value = meta?.full_name || meta?.name || '';
-      document.getElementById('f-location').value = meta?.location || '';
+      const nameEl = document.getElementById('f-name');
+      const locEl = document.getElementById('f-location');
+      if (nameEl) nameEl.value = meta?.full_name || meta?.name || '';
+      if (locEl) locEl.value = meta?.location || '';
     }
   });
 
