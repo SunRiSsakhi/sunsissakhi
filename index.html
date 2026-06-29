@@ -290,6 +290,10 @@
     <span class="stat-label">Stories shared</span>
   </div>
   <div class="stat">
+    <span class="stat-num" id="member-count">—</span>
+    <span class="stat-label">Members</span>
+  </div>
+  <div class="stat">
     <span class="stat-num">Any</span>
     <span class="stat-label">Language welcome</span>
   </div>
@@ -787,7 +791,17 @@
     showToast('Your story has been submitted. Thank you.');
   }
 
+  async function loadMembers() {
+    const { count, error } = await db
+      .from('profiles')
+      .select('*', { count: 'exact', head: true });
+    if (!error) {
+      document.getElementById('member-count').textContent = (count || 0) + 10;
+    }
+  }
+
   loadStories();
+  loadMembers();
 
 </script>
 </body>
