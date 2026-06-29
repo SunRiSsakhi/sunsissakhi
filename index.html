@@ -637,7 +637,8 @@
     return text.length > len ? text.slice(0, len) + '…' : text;
   }
 
-  function openReadModal(story) {
+  function openReadModal(el) {
+    const story = typeof el === 'string' ? JSON.parse(el) : el;
     document.getElementById('rm-lang').textContent = story.language || 'Unknown language';
     document.getElementById('rm-title').textContent = story.title || 'Untitled';
     document.getElementById('rm-meta').textContent = (story.author_name || 'Anonymous') + (story.location ? ' · ' + story.location : '') + ' · ' + new Date(story.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -667,7 +668,7 @@
                 <p class="author-loc">${s.location || ''}</p>
               </div>
             </div>
-            <span class="read-link" onclick='openReadModal(${JSON.stringify(s).replace(/'/g, "&#39;")})'>Read →</span>
+            <span class="read-link" onclick="openReadModal(this.dataset.story)" data-story="${JSON.stringify(s).replace(/"/g, '&quot;')}">Read →</span>
           </div>
         </div>
       </div>
