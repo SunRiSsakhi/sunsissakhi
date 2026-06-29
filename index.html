@@ -176,7 +176,11 @@
   .btn-submit:disabled { background: var(--terra-pale); cursor: not-allowed; }
 
   /* STORY READ MODAL */
-
+  .read-modal { max-width: 680px; }
+  .read-modal .story-full-lang { display: inline-block; font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terra-mid); background: var(--terra-cream); padding: 3px 10px; border-radius: 100px; margin-bottom: 1rem; }
+  .read-modal .story-full-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 500; color: var(--text-dark); margin-bottom: 0.5rem; line-height: 1.35; }
+  .read-modal .story-full-meta { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-soft); }
+  .read-modal .story-full-content { font-size: 1rem; color: var(--text-mid); line-height: 1.85; white-space: pre-wrap; }
 
   /* TOAST */
   .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--terra-deep); color: white; padding: 14px 24px; border-radius: 100px; font-size: 0.9375rem; z-index: 300; transition: transform 0.3s; pointer-events: none; }
@@ -195,7 +199,46 @@
     section { padding: 3.5rem 1.25rem; }
     .stats-strip { gap: 2rem; }
     .form-row { grid-template-columns: 1fr; }
+    .find-grid { grid-template-columns: 1fr; }
+    .founder-home { grid-template-columns: 1fr; gap: 1.5rem; }
   }
+
+  /* HOME SECTIONS */
+  .home-section { padding: 5rem 2rem; }
+  .home-section-inner { max-width: 860px; margin: 0 auto; }
+  .home-section.cream { background: var(--terra-cream); border-top: 1px solid var(--border-soft); border-bottom: 1px solid var(--border-soft); }
+  .home-section.dark { background: var(--terra-deep); }
+
+  .our-story-eyebrow { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--terra-mid); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; }
+  .our-story-eyebrow::before { content: ''; display: inline-block; width: 32px; height: 1px; background: var(--terra-mid); }
+  .our-story-bold { font-family: 'Playfair Display', serif; font-size: clamp(1.75rem, 3.5vw, 2.75rem); font-weight: 600; color: var(--text-dark); line-height: 1.2; margin-bottom: 0.75rem; }
+  .our-story-bold em { font-style: italic; color: var(--terra-mid); }
+  .our-story-sub { font-family: 'Playfair Display', serif; font-size: clamp(1rem, 2vw, 1.1875rem); font-style: italic; color: var(--text-muted); margin-bottom: 2rem; line-height: 1.6; }
+  .our-story-body { font-size: 1rem; color: var(--text-mid); line-height: 1.9; max-width: 720px; }
+  .our-story-body p { margin-bottom: 1.25rem; }
+  .our-story-welcome { font-family: 'Playfair Display', serif; font-size: clamp(1.25rem, 2.5vw, 1.75rem); font-weight: 600; color: var(--terra-deep); margin-top: 2rem; line-height: 1.3; }
+
+  .founder-home { display: grid; grid-template-columns: auto 1fr; gap: 3rem; align-items: start; }
+  .founder-home-avatar { width: 90px; height: 90px; border-radius: 50%; background: var(--terra-pale); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 500; color: var(--terra-deep); flex-shrink: 0; border: 3px solid white; box-shadow: 0 0 0 1px var(--border-soft); }
+  .founder-home-tag { font-size: 0.75rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--terra-mid); margin-bottom: 0.375rem; }
+  .founder-home-name { font-family: 'Playfair Display', serif; font-size: 1.625rem; font-weight: 500; color: var(--text-dark); margin-bottom: 0.25rem; }
+  .founder-home-roles { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.25rem; }
+  .founder-home-bio { font-size: 0.9375rem; color: var(--text-mid); line-height: 1.85; }
+  .founder-home-bio p { margin-bottom: 1rem; }
+  .founder-home-bio p:last-child { margin-bottom: 0; }
+  .btn-read-story { display: inline-block; margin-top: 1.5rem; background: none; border: 1.5px solid var(--terra-mid); color: var(--terra-mid); padding: 11px 24px; border-radius: 100px; font-size: 0.875rem; font-weight: 500; text-decoration: none; transition: all 0.2s; font-family: 'Inter', sans-serif; cursor: pointer; }
+  .btn-read-story:hover { background: var(--terra-mid); color: white; }
+
+  .vision-inner { text-align: center; max-width: 680px; margin: 0 auto; }
+  .vision-eyebrow { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 1.25rem; }
+  .vision-text { font-family: 'Playfair Display', serif; font-size: clamp(1.25rem, 2.5vw, 1.875rem); font-weight: 400; font-style: italic; color: white; line-height: 1.6; }
+
+  .find-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; margin-top: 2.5rem; }
+  .find-card { background: white; border: 1px solid var(--border-soft); border-radius: 16px; padding: 1.75rem; }
+  .find-card-dot { width: 36px; height: 36px; border-radius: 50%; background: var(--terra-cream); border: 1px solid var(--border-soft); display: flex; align-items: center; justify-content: center; margin-bottom: 1rem; font-size: 1rem; }
+  .find-card h3 { font-family: 'Playfair Display', serif; font-size: 1rem; font-weight: 500; color: var(--text-dark); margin-bottom: 0.5rem; }
+  .find-card p { font-size: 0.875rem; color: var(--text-mid); line-height: 1.7; }
+  .find-closing { margin-top: 2.5rem; font-family: 'Playfair Display', serif; font-size: clamp(1rem, 2vw, 1.25rem); font-style: italic; color: var(--text-mid); line-height: 1.7; max-width: 600px; }
 </style>
 </head>
 <body>
@@ -270,6 +313,77 @@
     <span class="stat-label">Always</span>
   </div>
 </div>
+
+
+<!-- OUR STORY -->
+<section class="home-section" id="our-story">
+  <div class="home-section-inner">
+    <p class="our-story-eyebrow">Our story</p>
+    <h2 class="our-story-bold">Every woman carries a story.</h2>
+    <p class="our-story-sub">Some have simply forgotten they deserve to tell it.</p>
+    <div class="our-story-body">
+      <p>SunRi-Ssakhi is a space where women rediscover their voice, rebuild their confidence, and reconnect with the strength that has always lived within them.</p>
+      <p>We believe transformation does not begin when you become someone new. It begins the moment you remember who you have always been.</p>
+      <p>Whether you are rebuilding after a setback, navigating a new chapter, or simply longing to hear yourself again — you belong here.</p>
+    </div>
+    <p class="our-story-welcome">Welcome home to yourself.</p>
+  </div>
+</section>
+
+<!-- MEET THE FOUNDER -->
+<section class="home-section cream" id="founder">
+  <div class="home-section-inner">
+    <p class="our-story-eyebrow">Meet the founder</p>
+    <div class="founder-home">
+      <div class="founder-home-avatar">AJ</div>
+      <div>
+        <p class="founder-home-tag">Founder</p>
+        <h2 class="founder-home-name">Ammbica Jain</h2>
+        <p class="founder-home-roles">IT Professional &nbsp;·&nbsp; Transformational Coach &nbsp;·&nbsp; Lifelong Learner</p>
+        <div class="founder-home-bio">
+          <p>For many years, I built my career in IT before taking a break to dedicate myself to my family. After moving to the United States, I embraced that chapter with gratitude — but deep inside, I felt something was missing. Not from my life, but from my voice.</p>
+          <p>As I met women from different backgrounds, I realised I was not alone. So many of us quietly carry dreams, questions, fears, and strengths that never find the space to be expressed. We spend years supporting others while slowly forgetting ourselves.</p>
+          <p>That realisation became the beginning of SunRi-Ssakhi. Because when a woman finds her voice, she does not just change her own life — she inspires others to find theirs.</p>
+        </div>
+        <a href="about.html" class="btn-read-story">Read my full story</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OUR VISION -->
+<section class="home-section dark">
+  <div class="vision-inner">
+    <p class="vision-eyebrow">Our vision</p>
+    <p class="vision-text">"To build a world where every woman feels confident enough to live as her authentic self, courageous enough to use her voice, and supported enough to know she never has to walk alone."</p>
+  </div>
+</section>
+
+<!-- WHAT YOU WILL FIND HERE -->
+<section class="home-section" id="find">
+  <div class="home-section-inner">
+    <p class="our-story-eyebrow">What you will find here</p>
+    <h2 class="our-story-bold" style="font-size:clamp(1.5rem,3vw,2.25rem);">A place to pause.<br>A place to breathe.<br><em>A place to be heard.</em></h2>
+    <div class="find-grid">
+      <div class="find-card">
+        <div class="find-card-dot">✦</div>
+        <h3>Their journeys</h3>
+        <p>Real stories from real women — navigating careers, families, change, loss, and becoming.</p>
+      </div>
+      <div class="find-card">
+        <div class="find-card-dot">✦</div>
+        <h3>Their dreams and fears</h3>
+        <p>The things we rarely say out loud. Written honestly, without performance, without judgement.</p>
+      </div>
+      <div class="find-card">
+        <div class="find-card-dot">✦</div>
+        <h3>Their breakthroughs</h3>
+        <p>Moments of clarity, courage, and becoming. The small victories that change everything.</p>
+      </div>
+    </div>
+    <p class="find-closing">You will find extraordinary stories of everyday women — their work, their becoming. And perhaps, somewhere in their story, you will discover a part of your own.</p>
+  </div>
+</section>
 
 <section id="stories">
   <div class="section-inner">
@@ -455,7 +569,16 @@
   </div>
 </div>
 
-
+<!-- READ MODAL -->
+<div class="modal-overlay" id="read-modal">
+  <div class="modal read-modal">
+    <button class="modal-close" onclick="closeReadModal()">✕</button>
+    <span class="story-full-lang" id="rm-lang"></span>
+    <h2 class="story-full-title" id="rm-title"></h2>
+    <p class="story-full-meta" id="rm-meta"></p>
+    <div class="story-full-content" id="rm-content"></div>
+  </div>
+</div>
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
@@ -594,13 +717,18 @@
     document.body.style.overflow = '';
   }
 
-
+  function closeReadModal() {
+    document.getElementById('read-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
 
   document.getElementById('modal').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
   });
 
-
+  document.getElementById('read-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeReadModal();
+  });
 
   function showToast(msg) {
     const t = document.getElementById('toast');
@@ -619,7 +747,15 @@
     return text.length > len ? text.slice(0, len) + '…' : text;
   }
 
-
+  function openReadModal(el) {
+    const story = typeof el === 'string' ? JSON.parse(el) : el;
+    document.getElementById('rm-lang').textContent = story.language || 'Unknown language';
+    document.getElementById('rm-title').textContent = story.title || 'Untitled';
+    document.getElementById('rm-meta').textContent = (story.author_name || 'Anonymous') + (story.location ? ' · ' + story.location : '') + ' · ' + new Date(story.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    document.getElementById('rm-content').textContent = story.content;
+    document.getElementById('read-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
 
   function renderStories(stories) {
     const grid = document.getElementById('stories-grid');
@@ -642,7 +778,7 @@
                 <p class="author-loc">${s.location || ''}</p>
               </div>
             </div>
-            <a class="read-link" href="story.html?id=${s.id}">Read →</a>
+            <span class="read-link" onclick="openReadModal(this.dataset.story)" data-story="${JSON.stringify(s).replace(/"/g, '&quot;')}">Read →</span>
           </div>
         </div>
       </div>
