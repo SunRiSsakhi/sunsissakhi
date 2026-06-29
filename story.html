@@ -162,6 +162,14 @@
   }
   .btn-write:hover { background: var(--terra-deep); }
 
+  /* LIKES */
+  .like-bar { display: flex; align-items: center; gap: 0.75rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-soft); }
+  .like-btn { display: flex; align-items: center; gap: 6px; background: none; border: 1.5px solid var(--border-soft); border-radius: 100px; padding: 8px 18px; font-size: 0.9375rem; cursor: pointer; font-family: 'Inter', sans-serif; color: var(--text-muted); transition: all 0.2s; }
+  .like-btn:hover { border-color: var(--terra-light); color: var(--terra-mid); }
+  .like-btn.active-like { background: var(--terra-cream); border-color: var(--terra-mid); color: var(--terra-mid); }
+  .like-btn.active-dislike { background: #fef2f2; border-color: #f4a98a; color: #c0623a; }
+  .like-label { font-size: 0.875rem; color: var(--text-muted); }
+
   /* FOOTER */
   footer { background: var(--text-dark); color: rgba(255,255,255,0.5); padding: 2rem; text-align: center; font-size: 0.8125rem; }
   .footer-logo { font-family: 'Playfair Display', serif; font-size: 1.125rem; color: white; margin-bottom: 0.25rem; }
@@ -209,6 +217,86 @@
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+  const ADMIN_EMAIL = 'ambica.clc@gmail.com';
+  let currentStoryId = null;
+  let currentUser = null;
+
+  db.auth.onAuthStateChange((event, session) => {
+    currentUser = session?.user || null;
+  });
+
+  function getGuestToken() {
+    let token = localStorage.getItem('srs_guest_token');
+    if (!token) {
+      token = 'guest_' + Math.random().toString(36).slice(2) + Date.now();
+      localStorage.setItem('srs_guest_token', token);
+    }
+    return token;
+  }
+
+  function isAdmin() {
+    return currentUser && currentUser.email === ADMIN_EMAIL;
+  }
+
+  async function loadLikes(storyId) {
+    const { data } = await db.from('likes').select('value').eq('story_id', storyId);
+    if (!data) return;
+    const likes = data.filter(r => r.value === 1).length;
+    const dislikes = data.filter(r => r.value === -1).length;
+    const lcEl = document.getElementById('sp-lc');
+    const dcEl = document.getElementById('sp-dc');
+    if (lcEl) lcEl.textContent = likes;
+    if (dcEl) dcEl.textContent = dislikes;
+
+    const myVote = await getMyVote(storyId);
+    const likeBtn = document.getElementById('sp-like');
+    const dislikeBtn = document.getElementById('sp-dislike');
+    if (likeBtn) likeBtn.classList.toggle('active-like', myVote === 1);
+    if (dislikeBtn) dislikeBtn.classList.toggle('active-dislike', myVote === -1);
+  }
+
+  async function getMyVote(storyId) {
+    if (currentUser && !isAdmin()) {
+      const { data } = await db.from('likes').select('value').eq('story_id', storyId).eq('user_id', currentUser.id).single();
+      return data?.value || 0;
+    } else if (!currentUser) {
+      const token = getGuestToken();
+      const { data } = await db.from('likes').select('value').eq('story_id', storyId).eq('guest_token', token).single();
+      return data?.value || 0;
+    }
+    return 0;
+  }
+
+  async function vote(storyId, value) {
+    if (isAdmin()) {
+      const adminToken = 'admin_' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + '_' + Date.now();
+      await db.from('likes').insert({ story_id: storyId, value, guest_token: adminToken });
+      loadLikes(storyId);
+      return;
+    }
+    if (currentUser) {
+      const { data: existing } = await db.from('likes').select('id, value').eq('story_id', storyId).eq('user_id', currentUser.id).single();
+      if (existing) {
+        if (existing.value === value) { await db.from('likes').delete().eq('id', existing.id); }
+        else { await db.from('likes').update({ value }).eq('id', existing.id); }
+      } else {
+        await db.from('likes').insert([{ story_id: storyId, user_id: currentUser.id, value }]);
+      }
+    } else {
+      const token = getGuestToken();
+      const { data: existing } = await db.from('likes').select('id, value').eq('story_id', storyId).eq('guest_token', token).single();
+      if (existing) {
+        if (existing.value === value) { await db.from('likes').delete().eq('id', existing.id); }
+        else { await db.from('likes').update({ value }).eq('id', existing.id); }
+      } else {
+        await db.from('likes').insert([{ story_id: storyId, guest_token: token, value }]);
+      }
+    }
+    loadLikes(storyId);
+  }
+
+
+
   function getInitials(name) {
     if (!name) return '?';
     return name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
@@ -239,7 +327,9 @@
       return;
     }
 
+    currentStoryId = data.id;
     renderStory(data);
+    setTimeout(() => loadLikes(data.id), 100);
   }
 
   function renderStory(s) {
@@ -260,6 +350,11 @@
         </div>
         <div class="story-accent"></div>
         <div class="story-body">${escapeHtml(s.content)}</div>
+        <div class="like-bar">
+          <span class="like-label">Was this story meaningful to you?</span>
+          <button class="like-btn" id="sp-like" onclick="vote(${s.id}, 1)">👍 <span id="sp-lc">0</span></button>
+          <button class="like-btn" id="sp-dislike" onclick="vote(${s.id}, -1)">👎 <span id="sp-dc">0</span></button>
+        </div>
         <div class="story-footer-nav">
           <a href="index.html#stories" class="back-link">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>

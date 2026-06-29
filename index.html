@@ -798,8 +798,9 @@
     const token = getGuestToken();
 
     if (isAdminUser) {
-      await db.from('likes').insert([{ story_id: storyId, value, guest_token: 'admin_' + Math.random().toString(36).slice(2) + '_' + Date.now() }]);
-      loadLikes(storyId);
+      const adminToken = 'admin_' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2) + '_' + Date.now();
+      const { error: adminErr } = await db.from('likes').insert({ story_id: storyId, value, guest_token: adminToken });
+      if (!adminErr) loadLikes(storyId);
       return;
     }
 
