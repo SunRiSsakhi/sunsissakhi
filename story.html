@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Story — SunRi-Ssakhi</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --terra-deep: #7A2E14;
+    --terra-mid: #C0623A;
+    --terra-light: #F4A98A;
+    --terra-pale: #F9CBB8;
+    --terra-cream: #FEF6F2;
+    --terra-ivory: #FFFAF8;
+    --text-dark: #2A1208;
+    --text-mid: #5C3520;
+    --text-muted: #9B6B58;
+    --border-soft: #F0D0C0;
+  }
+
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; background: var(--terra-ivory); color: var(--text-dark); line-height: 1.7; min-height: 100vh; }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,250,248,0.95); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between; height: 60px;
+  }
+  .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.25rem; font-weight: 500; color: var(--terra-deep); text-decoration: none; }
+  .nav-back { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+  .nav-back:hover { color: var(--terra-mid); }
+  .nav-back svg { width: 16px; height: 16px; }
+
+  /* LOADING / ERROR */
+  .state-wrap { display: flex; align-items: center; justify-content: center; min-height: 60vh; }
+  .state-box { text-align: center; max-width: 400px; }
+  .state-box p { color: var(--text-muted); font-size: 1rem; margin-bottom: 1.5rem; }
+  .btn-home { display: inline-block; background: var(--terra-mid); color: white; padding: 12px 24px; border-radius: 100px; font-size: 0.9375rem; text-decoration: none; transition: background 0.2s; }
+  .btn-home:hover { background: var(--terra-deep); }
+
+  /* STORY PAGE */
+  .story-wrap { max-width: 720px; margin: 0 auto; padding: 4rem 2rem 6rem; }
+
+  .story-header { margin-bottom: 2.5rem; }
+
+  .story-lang-badge {
+    display: inline-block;
+    font-size: 0.6875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--terra-mid);
+    background: var(--terra-cream);
+    border: 1px solid var(--terra-pale);
+    padding: 4px 12px;
+    border-radius: 100px;
+    margin-bottom: 1.25rem;
+  }
+
+  .story-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.75rem, 4vw, 2.75rem);
+    font-weight: 500;
+    line-height: 1.2;
+    color: var(--text-dark);
+    margin-bottom: 1.25rem;
+  }
+
+  .story-author-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--terra-pale);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.875rem; font-weight: 500;
+    color: var(--terra-deep);
+    flex-shrink: 0;
+  }
+
+  .author-name { font-size: 0.9375rem; font-weight: 500; color: var(--text-dark); }
+  .author-meta { font-size: 0.8125rem; color: var(--text-muted); }
+
+  /* DECORATIVE LINE */
+  .story-accent {
+    width: 48px; height: 4px;
+    background: linear-gradient(90deg, var(--terra-mid), var(--terra-light));
+    border-radius: 2px;
+    margin: 2rem 0;
+  }
+
+  /* STORY BODY */
+  .story-body {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.0625rem, 2vw, 1.1875rem);
+    line-height: 1.95;
+    color: var(--text-mid);
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* FOOTER NAV */
+  .story-footer-nav {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .back-link {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.9375rem; color: var(--terra-mid);
+    text-decoration: none; transition: color 0.2s;
+  }
+  .back-link:hover { color: var(--terra-deep); }
+
+  .share-btn {
+    background: none; border: 1.5px solid var(--terra-pale);
+    color: var(--terra-mid); padding: 10px 20px;
+    border-radius: 100px; font-size: 0.875rem;
+    cursor: pointer; font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+  }
+  .share-btn:hover { border-color: var(--terra-mid); }
+
+  /* WRITE CTA */
+  .write-cta {
+    background: var(--terra-cream);
+    border-top: 1px solid var(--border-soft);
+    padding: 3.5rem 2rem;
+    text-align: center;
+  }
+  .write-cta-inner { max-width: 480px; margin: 0 auto; }
+  .write-cta h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem; font-weight: 400;
+    color: var(--text-dark); margin-bottom: 0.75rem;
+  }
+  .write-cta h3 em { font-style: italic; color: var(--terra-mid); }
+  .write-cta p { font-size: 0.9375rem; color: var(--text-mid); margin-bottom: 1.5rem; line-height: 1.7; }
+  .btn-write {
+    display: inline-block;
+    background: var(--terra-mid); color: white;
+    padding: 13px 28px; border-radius: 100px;
+    font-size: 0.9375rem; font-weight: 500;
+    text-decoration: none; transition: background 0.2s;
+  }
+  .btn-write:hover { background: var(--terra-deep); }
+
+  /* FOOTER */
+  footer { background: var(--text-dark); color: rgba(255,255,255,0.5); padding: 2rem; text-align: center; font-size: 0.8125rem; }
+  .footer-logo { font-family: 'Playfair Display', serif; font-size: 1.125rem; color: white; margin-bottom: 0.25rem; }
+
+  @media (max-width: 640px) {
+    .story-wrap { padding: 2.5rem 1.25rem 4rem; }
+    nav { padding: 0 1.25rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">SunRi-Ssakhi</a>
+  <a href="index.html" class="nav-back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
+    All stories
+  </a>
+</nav>
+
+<div id="page-content">
+  <div class="state-wrap">
+    <div class="state-box">
+      <p>Loading story...</p>
+    </div>
+  </div>
+</div>
+
+<div class="write-cta" id="write-cta" style="display:none;">
+  <div class="write-cta-inner">
+    <h3>Have a story <em>of your own?</em></h3>
+    <p>SunRi-Ssakhi is where women write in any language, from anywhere in the world.</p>
+    <a href="index.html#stories" class="btn-write">Share your story</a>
+  </div>
+</div>
+
+<footer>
+  <p class="footer-logo">SunRi-Ssakhi</p>
+  <p>Her voice. Her world.</p>
+</footer>
+
+<script>
+  const SUPABASE_URL = 'https://lcdwzdmxkpqgstlxjmyq.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_3iDkjlu4yEkgkgvr6WlEOQ_hZNhaNU6';
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  function getInitials(name) {
+    if (!name) return '?';
+    return name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+  }
+
+  function formatDate(str) {
+    return new Date(str).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  async function loadStory() {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+
+    if (!id) {
+      showError('No story found.');
+      return;
+    }
+
+    const { data, error } = await db
+      .from('Stories')
+      .select('*')
+      .eq('id', id)
+      .eq('status', 'approved')
+      .single();
+
+    if (error || !data) {
+      showError('This story could not be found.');
+      return;
+    }
+
+    renderStory(data);
+  }
+
+  function renderStory(s) {
+    document.title = (s.title || 'A story') + ' — SunRi-Ssakhi';
+
+    document.getElementById('page-content').innerHTML = `
+      <div class="story-wrap">
+        <div class="story-header">
+          <span class="story-lang-badge">${s.language || 'Unknown language'}</span>
+          <h1 class="story-title">${s.title || 'Untitled'}</h1>
+          <div class="story-author-row">
+            <div class="avatar">${getInitials(s.author_name)}</div>
+            <div>
+              <p class="author-name">${s.author_name || 'Anonymous'}</p>
+              <p class="author-meta">${s.location ? s.location + ' · ' : ''}${formatDate(s.created_at)}</p>
+            </div>
+          </div>
+        </div>
+        <div class="story-accent"></div>
+        <div class="story-body">${escapeHtml(s.content)}</div>
+        <div class="story-footer-nav">
+          <a href="index.html" class="back-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
+            Back to all stories
+          </a>
+          <button class="share-btn" onclick="shareStory()">Share this story</button>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('write-cta').style.display = 'block';
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(text));
+    return div.innerHTML;
+  }
+
+  function showError(msg) {
+    document.getElementById('page-content').innerHTML = `
+      <div class="state-wrap">
+        <div class="state-box">
+          <p>${msg}</p>
+          <a href="index.html" class="btn-home">Back to SunRi-Ssakhi</a>
+        </div>
+      </div>
+    `;
+  }
+
+  function shareStory() {
+    if (navigator.share) {
+      navigator.share({ title: document.title, url: window.location.href });
+    } else {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        const btn = document.querySelector('.share-btn');
+        btn.textContent = 'Link copied!';
+        setTimeout(() => btn.textContent = 'Share this story', 2000);
+      });
+    }
+  }
+
+  loadStory();
+</script>
+</body>
+</html>

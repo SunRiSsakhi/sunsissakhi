@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SunRiSsakhi — Her Voice, Her World</title>
+<title>SunRi-Ssakhi — Her Voice, Her World</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -176,11 +176,7 @@
   .btn-submit:disabled { background: var(--terra-pale); cursor: not-allowed; }
 
   /* STORY READ MODAL */
-  .read-modal { max-width: 680px; }
-  .read-modal .story-full-lang { display: inline-block; font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terra-mid); background: var(--terra-cream); padding: 3px 10px; border-radius: 100px; margin-bottom: 1rem; }
-  .read-modal .story-full-title { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 500; color: var(--text-dark); margin-bottom: 0.5rem; line-height: 1.35; }
-  .read-modal .story-full-meta { font-size: 0.8125rem; color: var(--text-muted); margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-soft); }
-  .read-modal .story-full-content { font-size: 1rem; color: var(--text-mid); line-height: 1.85; white-space: pre-wrap; }
+
 
   /* TOAST */
   .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--terra-deep); color: white; padding: 14px 24px; border-radius: 100px; font-size: 0.9375rem; z-index: 300; transition: transform 0.3s; pointer-events: none; }
@@ -205,7 +201,7 @@
 <body>
 
 <nav>
-  <a href="#" class="nav-logo">SunRiSsakhi</a>
+  <a href="#" class="nav-logo">SunRi-Ssakhi</a>
   <ul class="nav-links">
     <li><a href="#stories">Stories</a></li>
     <li><a href="#work">Work</a></li>
@@ -214,7 +210,7 @@
   <div id="nav-auth">
     <div id="nav-logged-out" style="display:flex; gap:0.75rem; align-items:center;">
       <a href="#" style="font-size:0.875rem; color:var(--text-mid); text-decoration:none;" onclick="openAuthModal('login'); return false;">Sign in</a>
-      <a href="#" class="nav-cta" onclick="openAuthModal('signup'); return false;">Join SunRiSsakhi</a>
+      <a href="#" class="nav-cta" onclick="openAuthModal('signup'); return false;">Join SunRi-Ssakhi</a>
     </div>
     <div id="nav-logged-in" style="display:none;" class="nav-user">
       <div class="nav-avatar" id="nav-avatar">?</div>
@@ -230,7 +226,7 @@
     <div class="hero-left">
       <p class="hero-eyebrow">A space for every woman</p>
       <h1 class="hero-title">Your voice,<br><em>your story,</em><br>your world.</h1>
-      <p class="hero-sub">SunRiSsakhi is a community where women write, share, and celebrate each other — in any language, from any place.</p>
+      <p class="hero-sub">SunRi-Ssakhi is a community where women write, share, and celebrate each other — in any language, from any place.</p>
       <div class="hero-actions">
         <button class="btn-primary" onclick="handleWriteClick()">Share your story</button>
         <a href="#stories" class="btn-ghost">Read stories</a>
@@ -355,13 +351,13 @@
 <div class="cta-section">
   <div class="cta-inner">
     <h2 class="cta-title">Your story<br><em>belongs here.</em></h2>
-    <p class="cta-sub">Write in Hindi, Urdu, Tamil, English, or any language that is yours. SunRiSsakhi is where your voice lives.</p>
+    <p class="cta-sub">Write in Hindi, Urdu, Tamil, English, or any language that is yours. SunRi-Ssakhi is where your voice lives.</p>
     <button class="btn-primary" onclick="handleWriteClick()">Share your story</button>
   </div>
 </div>
 
 <footer>
-  <p class="footer-logo">SunRiSsakhi</p>
+  <p class="footer-logo">SunRi-Ssakhi</p>
   <p class="footer-tagline">Her voice. Her world.</p>
   <ul class="footer-links">
     <li><a href="#stories">Stories</a></li>
@@ -369,7 +365,7 @@
     <li><a href="#community">Community</a></li>
     <li><a href="#" onclick="openModal(); return false;">Write with us</a></li>
   </ul>
-  <p class="footer-copy">© 2025 SunRiSsakhi. Built for women, by women.</p>
+  <p class="footer-copy">© 2025 SunRi-Ssakhi. Built for women, by women.</p>
 </footer>
 
 <!-- AUTH MODAL -->
@@ -377,7 +373,7 @@
   <div class="modal" style="max-width:440px;">
     <button class="modal-close" onclick="closeAuthModal()">✕</button>
     <div class="auth-tabs">
-      <button class="auth-tab active" id="tab-signup" onclick="switchAuthTab('signup')">Join SunRiSsakhi</button>
+      <button class="auth-tab active" id="tab-signup" onclick="switchAuthTab('signup')">Join SunRi-Ssakhi</button>
       <button class="auth-tab" id="tab-login" onclick="switchAuthTab('login')">Sign in</button>
     </div>
 
@@ -418,7 +414,7 @@
         <p class="field-error" id="l-error"></p>
       </div>
       <button class="btn-primary" id="l-btn" onclick="signIn()" style="margin-top:0.5rem;">Sign in</button>
-      <p class="auth-switch">New here? <a onclick="switchAuthTab('signup')">Join SunRiSsakhi</a></p>
+      <p class="auth-switch">New here? <a onclick="switchAuthTab('signup')">Join SunRi-Ssakhi</a></p>
     </div>
   </div>
 </div>
@@ -459,16 +455,7 @@
   </div>
 </div>
 
-<!-- READ MODAL -->
-<div class="modal-overlay" id="read-modal">
-  <div class="modal read-modal">
-    <button class="modal-close" onclick="closeReadModal()">✕</button>
-    <span class="story-full-lang" id="rm-lang"></span>
-    <h2 class="story-full-title" id="rm-title"></h2>
-    <p class="story-full-meta" id="rm-meta"></p>
-    <div class="story-full-content" id="rm-content"></div>
-  </div>
-</div>
+
 
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
@@ -558,7 +545,7 @@
     if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
 
     closeAuthModal();
-    showToast('Welcome to SunRiSsakhi! Check your email to confirm your account.');
+    showToast('Welcome to SunRi-Ssakhi! Check your email to confirm your account.');
   }
 
   async function signIn() {
@@ -607,18 +594,13 @@
     document.body.style.overflow = '';
   }
 
-  function closeReadModal() {
-    document.getElementById('read-modal').classList.remove('open');
-    document.body.style.overflow = '';
-  }
+
 
   document.getElementById('modal').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
   });
 
-  document.getElementById('read-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeReadModal();
-  });
+
 
   function showToast(msg) {
     const t = document.getElementById('toast');
@@ -637,15 +619,7 @@
     return text.length > len ? text.slice(0, len) + '…' : text;
   }
 
-  function openReadModal(el) {
-    const story = typeof el === 'string' ? JSON.parse(el) : el;
-    document.getElementById('rm-lang').textContent = story.language || 'Unknown language';
-    document.getElementById('rm-title').textContent = story.title || 'Untitled';
-    document.getElementById('rm-meta').textContent = (story.author_name || 'Anonymous') + (story.location ? ' · ' + story.location : '') + ' · ' + new Date(story.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
-    document.getElementById('rm-content').textContent = story.content;
-    document.getElementById('read-modal').classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
+
 
   function renderStories(stories) {
     const grid = document.getElementById('stories-grid');
@@ -668,7 +642,7 @@
                 <p class="author-loc">${s.location || ''}</p>
               </div>
             </div>
-            <span class="read-link" onclick="openReadModal(this.dataset.story)" data-story="${JSON.stringify(s).replace(/"/g, '&quot;')}">Read →</span>
+            <a class="read-link" href="story.html?id=${s.id}">Read →</a>
           </div>
         </div>
       </div>
