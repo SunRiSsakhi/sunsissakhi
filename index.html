@@ -1135,7 +1135,7 @@
       .from('profiles')
       .select('id');
     if (!error && data) {
-      document.getElementById('member-count').textContent = data.length;
+      document.getElementById('member-count').textContent = data.length + 10;
     }
   }
 
