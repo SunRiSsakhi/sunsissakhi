@@ -1131,11 +1131,11 @@
   }
 
   async function loadMembers() {
-    const { count, error } = await db
+    const { data, error } = await db
       .from('profiles')
-      .select('*', { count: 'exact', head: true });
-    if (!error) {
-      document.getElementById('member-count').textContent = (count || 0) + 10;
+      .select('id');
+    if (!error && data) {
+      document.getElementById('member-count').textContent = data.length + 10;
     }
   }
 
