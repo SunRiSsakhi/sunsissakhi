@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stories — SunRi-Ssakhi</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --terra-deep: #7A2E14; --terra-mid: #C0623A; --terra-light: #F4A98A;
+    --terra-pale: #F9CBB8; --terra-cream: #FEF6F2; --terra-ivory: #FFFAF8;
+    --text-dark: #2A1208; --text-mid: #5C3520; --text-muted: #9B6B58;
+    --border-soft: #F0D0C0;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; background: var(--terra-ivory); color: var(--text-dark); line-height: 1.7; min-height: 100vh; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,250,248,0.95); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 0.75rem 2rem;
+    display: flex; align-items: center; justify-content: space-between; min-height: 60px;
+  }
+  .logo-wrap { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+  .nav-logo { font-family: 'Georgia', 'Playfair Display', serif; font-size: 1.375rem; font-weight: 700; font-style: italic; color: #FEF6F2; background: #7A2E14; padding: 6px 16px; border-radius: 6px; text-decoration: none; letter-spacing: 0.01em; display: inline-block; }
+  .logo-tagline { font-size: 0.6875rem; color: var(--text-muted); line-height: 1.35; margin-top: 4px; text-align: center; }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { font-size: 0.875rem; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--terra-deep); font-weight: 500; }
+  .nav-auth { display: flex; align-items: center; gap: 0.75rem; }
+  .nav-cta { background: var(--terra-mid); color: white; padding: 8px 20px; border-radius: 100px; font-size: 0.8125rem; text-decoration: none; }
+  .nav-signout { font-size: 0.8125rem; color: var(--text-muted); background: none; border: 1px solid var(--border-soft); padding: 5px 12px; border-radius: 100px; cursor: pointer; font-family: 'Inter', sans-serif; }
+
+  .page-wrap { max-width: 1100px; margin: 0 auto; padding: 3.5rem 2rem 5rem; }
+  .page-eyebrow { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--terra-mid); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+  .page-eyebrow::before { content: ''; display: inline-block; width: 24px; height: 1px; background: var(--terra-mid); }
+  .page-title { font-family: 'Playfair Display', serif; font-size: clamp(1.75rem, 3.5vw, 2.5rem); font-weight: 400; color: var(--text-dark); line-height: 1.25; margin-bottom: 0.75rem; }
+  .page-title em { font-style: italic; color: var(--terra-mid); }
+  .page-sub { font-size: 1rem; color: var(--text-mid); line-height: 1.8; margin-bottom: 2.5rem; }
+
+  .stories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+  .story-card { background: white; border: 1px solid var(--border-soft); border-radius: 16px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s; position: relative; }
+  .story-card:hover { transform: translateY(-3px); box-shadow: 0 8px 32px rgba(122,46,20,0.08); }
+  .story-card-top { height: 6px; background: linear-gradient(90deg, var(--terra-light), var(--terra-pale)); }
+  .story-card-body { padding: 1.5rem; }
+  .story-lang { display: inline-block; font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terra-mid); background: var(--terra-cream); padding: 3px 10px; border-radius: 100px; margin-bottom: 0.75rem; }
+  .story-title { font-family: 'Playfair Display', serif; font-size: 1.125rem; font-weight: 500; color: var(--text-dark); margin-bottom: 0.5rem; line-height: 1.4; }
+  .story-excerpt { font-size: 0.875rem; color: var(--text-mid); line-height: 1.7; margin-bottom: 1.25rem; }
+  .story-footer { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-soft); padding-top: 1rem; }
+  .story-author-info { display: flex; align-items: center; gap: 0.5rem; }
+  .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--terra-pale); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 500; color: var(--terra-deep); flex-shrink: 0; }
+  .author-name { font-size: 0.8125rem; font-weight: 500; color: var(--text-dark); }
+  .author-loc { font-size: 0.75rem; color: var(--text-muted); }
+  .read-link { font-size: 0.8125rem; color: var(--terra-mid); text-decoration: none; }
+  .read-link:hover { color: var(--terra-deep); }
+
+  .admin-menu-wrap { position: absolute; top: 14px; right: 14px; z-index: 5; }
+  .admin-menu-btn { background: rgba(255,255,255,0.9); border: 1px solid var(--border-soft); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; color: var(--text-muted); font-size: 1rem; display: flex; align-items: center; justify-content: center; }
+  .admin-dropdown { display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid var(--border-soft); border-radius: 10px; box-shadow: 0 8px 24px rgba(122,46,20,0.15); min-width: 130px; z-index: 20; overflow: hidden; margin-top: 4px; }
+  .admin-dropdown.open { display: block; }
+  .admin-dropdown button { display: block; width: 100%; text-align: left; padding: 9px 14px; font-size: 0.8125rem; background: none; border: none; cursor: pointer; color: #A32D2D; font-family: 'Inter', sans-serif; }
+  .admin-dropdown button:hover { background: #FCEBEB; }
+
+  .write-cta-bar { background: var(--terra-cream); border: 1px solid var(--border-soft); border-radius: 16px; padding: 1.5rem 2rem; margin-bottom: 2.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .write-cta-bar p { font-size: 0.9375rem; color: var(--text-mid); }
+  .write-cta-bar p strong { color: var(--text-dark); font-weight: 500; }
+  .btn-write { background: var(--terra-mid); color: white; padding: 10px 24px; border-radius: 100px; font-size: 0.875rem; font-weight: 500; text-decoration: none; transition: background 0.2s; }
+  .btn-write:hover { background: var(--terra-deep); }
+
+  .loading-msg { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9375rem; grid-column: 1/-1; }
+  .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--terra-deep); color: white; padding: 12px 24px; border-radius: 100px; font-size: 0.9375rem; z-index: 300; transition: transform 0.3s; pointer-events: none; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 640px) {
+    .page-wrap { padding: 2rem 1.25rem 3rem; }
+    nav { padding: 0.75rem 1.25rem; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo-wrap">
+    <a href="index.html" class="nav-logo">SunRi-Ssakhi</a>
+    <p class="logo-tagline">A place to pause.<br>A place to breathe.<br>A place to be heard.</p>
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="stories.html" class="active">Stories</a></li>
+    <li><a href="work-gallery.html">Work</a></li>
+    <li><a href="community.html">Community</a></li>
+  </ul>
+  <div class="nav-auth">
+    <div id="nav-logged-out" style="display:flex; gap:0.75rem; align-items:center;">
+      <a href="index.html" style="font-size:0.875rem; color:var(--text-mid); text-decoration:none;">Sign in</a>
+      <a href="index.html" class="nav-cta">Join</a>
+    </div>
+    <div id="nav-logged-in" style="display:none; align-items:center; gap:0.75rem;">
+      <a href="my-page.html" style="font-size:0.875rem; color:var(--text-mid); text-decoration:none;" id="nav-user-name"></a>
+      <button class="nav-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <p class="page-eyebrow">Stories & thoughts</p>
+  <h1 class="page-title">Written from the heart,<br><em>in her own words</em></h1>
+  <p class="page-sub">Women sharing their journeys, fears and dreams, their breakthroughs — in their own language. These are their stories, unfiltered, entirely their own.</p>
+  <div class="write-cta-bar">
+    <p><strong>Have a story to share?</strong> Write in any language — Hindi, English, Urdu, Tamil, or whatever is yours.</p>
+    <a href="write.html" class="btn-write" id="write-link">Share your story</a>
+  </div>
+  <div class="stories-grid" id="stories-grid"><p class="loading-msg">Loading stories...</p></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://lcdwzdmxkpqgstlxjmyq.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_3iDkjlu4yEkgkgvr6WlEOQ_hZNhaNU6';
+  const ADMIN_EMAIL = 'ambica.clc@gmail.com';
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+  let currentUser = null;
+
+  function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3000); }
+  function isAdmin() { return currentUser && currentUser.email === ADMIN_EMAIL; }
+  function getInitials(name) { if (!name) return '?'; return name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2); }
+  function truncate(text, len) { if (!text) return ''; return text.length > len ? text.slice(0, len) + '…' : text; }
+
+  function updateNavAuth() {
+    const out = document.getElementById('nav-logged-out');
+    const inn = document.getElementById('nav-logged-in');
+    const nameEl = document.getElementById('nav-user-name');
+    if (currentUser) {
+      out.style.display = 'none'; inn.style.display = 'flex';
+      const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+      if (nameEl) nameEl.textContent = name;
+    } else { out.style.display = 'flex'; inn.style.display = 'none'; }
+  }
+
+  async function signOut() { await db.auth.signOut(); currentUser = null; updateNavAuth(); }
+
+  function toggleAdminMenu(event, id) {
+    event.stopPropagation();
+    const menu = document.getElementById('adm-' + id);
+    const isOpen = menu.classList.contains('open');
+    document.querySelectorAll('.admin-dropdown').forEach(m => m.classList.remove('open'));
+    if (!isOpen) menu.classList.add('open');
+  }
+  document.addEventListener('click', () => { document.querySelectorAll('.admin-dropdown').forEach(m => m.classList.remove('open')); });
+
+  async function adminDeleteStory(id) {
+    if (!confirm('Delete this story permanently?')) return;
+    await db.from('Stories').delete().eq('id', id);
+    loadStories();
+    showToast('Story deleted.');
+  }
+
+  async function loadStories() {
+    const { data, error } = await db.from('Stories').select('*').eq('status', 'approved').order('created_at', { ascending: false });
+    const grid = document.getElementById('stories-grid');
+    if (error || !data || data.length === 0) {
+      grid.innerHTML = '<p class="loading-msg">No stories yet — be the first to write.</p>';
+      return;
+    }
+    grid.innerHTML = data.map(s => `
+      <div class="story-card">
+        ${isAdmin() ? `<div class="admin-menu-wrap"><button class="admin-menu-btn" onclick="toggleAdminMenu(event, 'story-${s.id}')">⋯</button><div class="admin-dropdown" id="adm-story-${s.id}"><button onclick="adminDeleteStory(${s.id})">Delete story</button></div></div>` : ''}
+        <div class="story-card-top"></div>
+        <div class="story-card-body">
+          <span class="story-lang">${s.language || 'Unknown'}</span>
+          <h3 class="story-title">${s.title || 'Untitled'}</h3>
+          <p class="story-excerpt">${truncate(s.content, 160)}</p>
+          <div class="story-footer">
+            <div class="story-author-info">
+              <div class="avatar">${getInitials(s.author_name)}</div>
+              <div>
+                <p class="author-name">${s.author_name || 'Anonymous'}</p>
+                <p class="author-loc">${s.location || ''}</p>
+              </div>
+            </div>
+            <a class="read-link" href="story.html?id=${s.id}">Read →</a>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  db.auth.onAuthStateChange((event, session) => { currentUser = session?.user || null; updateNavAuth(); loadStories(); });
+  db.auth.getSession().then(({ data: { session } }) => { currentUser = session?.user || null; updateNavAuth(); loadStories(); });
+</script>
+</body>
+</html>
