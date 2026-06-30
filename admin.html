@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SunRi-Ssakhi — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --terra-deep: #7A2E14; --terra-mid: #C0623A; --terra-light: #F4A98A;
+    --terra-pale: #F9CBB8; --terra-cream: #FEF6F2; --terra-ivory: #FFFAF8;
+    --text-dark: #2A1208; --text-mid: #5C3520; --text-muted: #9B6B58;
+    --border-soft: #F0D0C0; --green: #2D7A3A; --green-bg: #EAF5EC;
+    --red: #A32D2D; --red-bg: #FCEBEB;
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--terra-ivory); color: var(--text-dark); line-height: 1.6; min-height: 100vh; }
+
+  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+  .login-card { background: white; border: 1px solid var(--border-soft); border-radius: 20px; padding: 2.5rem; width: 100%; max-width: 400px; text-align: center; }
+  .login-logo { font-family: 'Playfair Display', serif; font-size: 1.5rem; color: var(--terra-deep); margin-bottom: 0.25rem; }
+  .login-sub { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 2rem; }
+  .login-card input { width: 100%; padding: 12px 16px; border: 1.5px solid var(--border-soft); border-radius: 10px; font-size: 1rem; font-family: 'Inter', sans-serif; color: var(--text-dark); background: var(--terra-ivory); outline: none; margin-bottom: 1rem; transition: border-color 0.2s; }
+  .login-card input:focus { border-color: var(--terra-mid); }
+  .login-error { font-size: 0.8125rem; color: var(--red); margin-bottom: 1rem; display: none; }
+
+  .admin-wrap { display: none; max-width: 960px; margin: 0 auto; padding: 2rem; }
+  .admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-soft); }
+  .admin-logo { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--terra-deep); }
+  .admin-title { font-size: 0.875rem; color: var(--text-muted); }
+  .logout-btn { font-size: 0.8125rem; color: var(--text-muted); background: none; border: 1px solid var(--border-soft); padding: 6px 14px; border-radius: 100px; cursor: pointer; font-family: 'Inter', sans-serif; }
+  .logout-btn:hover { color: var(--text-dark); }
+
+  .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .tab { padding: 8px 20px; border-radius: 100px; font-size: 0.875rem; border: 1px solid var(--border-soft); background: white; cursor: pointer; color: var(--text-mid); font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .tab.active { background: var(--terra-mid); color: white; border-color: var(--terra-mid); }
+  .tab-count { display: inline-block; background: var(--terra-pale); color: var(--terra-deep); font-size: 0.75rem; padding: 1px 7px; border-radius: 100px; margin-left: 6px; }
+  .tab.active .tab-count { background: rgba(255,255,255,0.3); color: white; }
+
+  .subtabs { display: flex; gap: 0.375rem; margin-bottom: 1.25rem; }
+  .subtab { padding: 6px 16px; border-radius: 100px; font-size: 0.8125rem; border: 1px solid var(--border-soft); background: white; cursor: pointer; color: var(--text-muted); font-family: 'Inter', sans-serif; }
+  .subtab.active { background: var(--terra-cream); color: var(--terra-mid); border-color: var(--terra-mid); }
+
+  .items-list { display: flex; flex-direction: column; gap: 1rem; }
+  .admin-card { background: white; border: 1px solid var(--border-soft); border-radius: 16px; padding: 1.5rem; }
+  .admin-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+  .admin-card-meta { flex: 1; }
+  .admin-card-lang { display: inline-block; font-size: 0.6875rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--terra-mid); background: var(--terra-cream); padding: 2px 8px; border-radius: 100px; margin-bottom: 0.375rem; }
+  .admin-card-title { font-family: 'Playfair Display', serif; font-size: 1.0625rem; font-weight: 500; color: var(--text-dark); margin-bottom: 0.25rem; }
+  .admin-card-info { font-size: 0.8125rem; color: var(--text-muted); }
+  .admin-card-date { font-size: 0.75rem; color: var(--text-muted); text-align: right; white-space: nowrap; }
+  .admin-card-content { font-size: 0.9375rem; color: var(--text-mid); line-height: 1.75; padding: 1rem; background: var(--terra-cream); border-radius: 10px; margin-bottom: 1rem; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
+  .admin-card-img { width: 100%; max-height: 280px; object-fit: cover; border-radius: 10px; margin-bottom: 1rem; }
+  .admin-card-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+
+  .btn-approve { padding: 8px 20px; border-radius: 100px; background: var(--green-bg); color: var(--green); border: 1px solid #b8dfc0; font-size: 0.875rem; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .btn-approve:hover { background: var(--green); color: white; }
+  .btn-reject { padding: 8px 20px; border-radius: 100px; background: var(--red-bg); color: var(--red); border: 1px solid #f0c0c0; font-size: 0.875rem; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .btn-reject:hover { background: var(--red); color: white; }
+  .btn-delete { padding: 8px 20px; border-radius: 100px; background: var(--red-bg); color: var(--red); border: 1px solid #f0c0c0; font-size: 0.875rem; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .btn-delete:hover { background: var(--red); color: white; }
+  .btn-restore { padding: 8px 20px; border-radius: 100px; background: var(--green-bg); color: var(--green); border: 1px solid #b8dfc0; font-size: 0.875rem; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .btn-restore:hover { background: var(--green); color: white; }
+
+  .empty-state { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.9375rem; }
+  .loading-state { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.9375rem; }
+
+  .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--terra-deep); color: white; padding: 12px 24px; border-radius: 100px; font-size: 0.9375rem; z-index: 300; transition: transform 0.3s; pointer-events: none; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  .btn-primary { background: var(--terra-mid); color: white; padding: 12px 28px; border-radius: 100px; font-size: 0.9375rem; font-weight: 500; border: none; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.2s; width: 100%; }
+  .btn-primary:hover { background: var(--terra-deep); }
+</style>
+</head>
+<body>
+
+<div class="login-wrap" id="login-screen">
+  <div class="login-card">
+    <p class="login-logo">SunRi-Ssakhi</p>
+    <p class="login-sub">Admin panel</p>
+    <input type="password" id="password-input" placeholder="Enter password" onkeydown="if(event.key==='Enter') login()">
+    <p class="login-error" id="login-error">Incorrect password. Try again.</p>
+    <button class="btn-primary" onclick="login()">Sign in</button>
+  </div>
+</div>
+
+<div class="admin-wrap" id="admin-screen">
+  <div class="admin-header">
+    <div>
+      <p class="admin-logo">SunRi-Ssakhi</p>
+      <p class="admin-title">Admin panel</p>
+    </div>
+    <button class="logout-btn" onclick="logout()">Sign out</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchMainTab('stories', this)">Stories <span class="tab-count" id="stories-pending-count">0</span></button>
+    <button class="tab" onclick="switchMainTab('work', this)">Work <span class="tab-count" id="work-pending-count">0</span></button>
+  </div>
+
+  <div id="stories-panel">
+    <div class="subtabs">
+      <button class="subtab active" onclick="switchSubTab('stories', 'pending', this)">Pending</button>
+      <button class="subtab" onclick="switchSubTab('stories', 'approved', this)">Approved</button>
+      <button class="subtab" onclick="switchSubTab('stories', 'rejected', this)">Rejected</button>
+    </div>
+    <div class="items-list" id="stories-list"><p class="loading-state">Loading...</p></div>
+  </div>
+
+  <div id="work-panel" style="display:none;">
+    <div class="subtabs">
+      <button class="subtab active" onclick="switchSubTab('work', 'pending', this)">Pending</button>
+      <button class="subtab" onclick="switchSubTab('work', 'approved', this)">Approved</button>
+      <button class="subtab" onclick="switchSubTab('work', 'rejected', this)">Rejected</button>
+    </div>
+    <div class="items-list" id="work-list"><p class="loading-state">Loading...</p></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://lcdwzdmxkpqgstlxjmyq.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_3iDkjlu4yEkgkgvr6WlEOQ_hZNhaNU6';
+  const PASSWORD = 'Everymomentisbest1@';
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let allStories = [];
+  let allWork = [];
+  let currentMainTab = 'stories';
+  let currentStoriesTab = 'pending';
+  let currentWorkTab = 'pending';
+
+  function login() {
+    const val = document.getElementById('password-input').value;
+    if (val === PASSWORD) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-screen').style.display = 'block';
+      loadAll();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+    }
+  }
+
+  function logout() {
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('admin-screen').style.display = 'none';
+    document.getElementById('password-input').value = '';
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function formatDate(str) {
+    return new Date(str).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function switchMainTab(tab, el) {
+    currentMainTab = tab;
+    document.querySelectorAll('.tabs .tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('stories-panel').style.display = tab === 'stories' ? 'block' : 'none';
+    document.getElementById('work-panel').style.display = tab === 'work' ? 'block' : 'none';
+  }
+
+  function switchSubTab(section, status, el) {
+    el.closest('.subtabs').querySelectorAll('.subtab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    if (section === 'stories') { currentStoriesTab = status; renderStories(status); }
+    else { currentWorkTab = status; renderWork(status); }
+  }
+
+  async function loadAll() {
+    const [storiesRes, workRes] = await Promise.all([
+      db.from('Stories').select('*').order('created_at', { ascending: false }),
+      db.from('work').select('*').order('created_at', { ascending: false })
+    ]);
+    allStories = storiesRes.data || [];
+    allWork = workRes.data || [];
+    updateCounts();
+    renderStories('pending');
+    renderWork('pending');
+  }
+
+  function updateCounts() {
+    document.getElementById('stories-pending-count').textContent = allStories.filter(s => s.status === 'pending').length;
+    document.getElementById('work-pending-count').textContent = allWork.filter(w => w.status === 'pending').length;
+  }
+
+  function renderStories(status) {
+    const list = document.getElementById('stories-list');
+    const items = allStories.filter(s => s.status === status);
+    if (items.length === 0) { list.innerHTML = `<p class="empty-state">No ${status} stories.</p>`; return; }
+    list.innerHTML = items.map(s => `
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-meta">
+            <span class="admin-card-lang">${s.language || 'Unknown'}</span>
+            <h3 class="admin-card-title">${s.title || 'Untitled'}</h3>
+            <p class="admin-card-info">${s.author_name || 'Anonymous'}${s.location ? ' · ' + s.location : ''}</p>
+          </div>
+          <p class="admin-card-date">${formatDate(s.created_at)}</p>
+        </div>
+        <div class="admin-card-content">${s.content}</div>
+        <div class="admin-card-actions">
+          ${status === 'pending' ? `<button class="btn-reject" onclick="updateStory(${s.id}, 'rejected')">Reject</button><button class="btn-approve" onclick="updateStory(${s.id}, 'approved')">Approve</button>` : ''}
+          ${status === 'approved' ? `<button class="btn-reject" onclick="updateStory(${s.id}, 'rejected')">Unpublish</button>` : ''}
+          ${status === 'rejected' ? `<button class="btn-restore" onclick="updateStory(${s.id}, 'approved')">Approve</button><button class="btn-delete" onclick="deleteStory(${s.id})">Delete</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function renderWork(status) {
+    const list = document.getElementById('work-list');
+    const items = allWork.filter(w => w.status === status);
+    if (items.length === 0) { list.innerHTML = `<p class="empty-state">No ${status} work submissions.</p>`; return; }
+    list.innerHTML = items.map(w => `
+      <div class="admin-card">
+        <div class="admin-card-header">
+          <div class="admin-card-meta">
+            <span class="admin-card-lang">${w.category || 'Work'}</span>
+            <h3 class="admin-card-title">${w.title}</h3>
+            <p class="admin-card-info">${w.author_name || 'Anonymous'}${w.location ? ' · ' + w.location : ''}</p>
+          </div>
+          <p class="admin-card-date">${formatDate(w.created_at)}</p>
+        </div>
+        ${w.image_url ? `<img src="${w.image_url}" class="admin-card-img" alt="${w.title}">` : ''}
+        ${w.description ? `<div class="admin-card-content">${w.description}</div>` : ''}
+        <div class="admin-card-actions">
+          ${status === 'pending' ? `<button class="btn-reject" onclick="updateWork(${w.id}, 'rejected')">Reject</button><button class="btn-approve" onclick="updateWork(${w.id}, 'approved')">Approve</button>` : ''}
+          ${status === 'approved' ? `<button class="btn-reject" onclick="updateWork(${w.id}, 'rejected')">Unpublish</button>` : ''}
+          ${status === 'rejected' ? `<button class="btn-restore" onclick="updateWork(${w.id}, 'approved')">Approve</button><button class="btn-delete" onclick="deleteWork(${w.id})">Delete</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  async function updateStory(id, status) {
+    const { error } = await db.from('Stories').update({ status }).eq('id', id);
+    if (error) { showToast('Something went wrong.'); return; }
+    allStories = allStories.map(s => s.id === id ? { ...s, status } : s);
+    updateCounts();
+    renderStories(currentStoriesTab);
+    showToast(status === 'approved' ? 'Story approved and live.' : 'Story updated.');
+  }
+
+  async function deleteStory(id) {
+    if (!confirm('Permanently delete this story?')) return;
+    const { error } = await db.from('Stories').delete().eq('id', id);
+    if (error) { showToast('Something went wrong.'); return; }
+    allStories = allStories.filter(s => s.id !== id);
+    updateCounts();
+    renderStories(currentStoriesTab);
+    showToast('Story deleted.');
+  }
+
+  async function updateWork(id, status) {
+    const { error } = await db.from('work').update({ status }).eq('id', id);
+    if (error) { showToast('Something went wrong.'); return; }
+    allWork = allWork.map(w => w.id === id ? { ...w, status } : w);
+    updateCounts();
+    renderWork(currentWorkTab);
+    showToast(status === 'approved' ? 'Work approved and live.' : 'Work updated.');
+  }
+
+  async function deleteWork(id) {
+    if (!confirm('Permanently delete this work submission?')) return;
+    const { error } = await db.from('work').delete().eq('id', id);
+    if (error) { showToast('Something went wrong.'); return; }
+    allWork = allWork.filter(w => w.id !== id);
+    updateCounts();
+    renderWork(currentWorkTab);
+    showToast('Work deleted.');
+  }
+</script>
+</body>
+</html>
