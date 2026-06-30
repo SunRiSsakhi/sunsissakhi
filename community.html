@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Community — SunRi-Ssakhi</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --terra-deep: #7A2E14; --terra-mid: #C0623A; --terra-light: #F4A98A;
+    --terra-pale: #F9CBB8; --terra-cream: #FEF6F2; --terra-ivory: #FFFAF8;
+    --text-dark: #2A1208; --text-mid: #5C3520; --text-muted: #9B6B58;
+    --border-soft: #F0D0C0;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; background: var(--terra-ivory); color: var(--text-dark); line-height: 1.7; min-height: 100vh; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,250,248,0.95); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 0.75rem 2rem;
+    display: flex; align-items: center; justify-content: space-between; min-height: 60px;
+  }
+  .logo-wrap { display: inline-flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+  .nav-logo { font-family: 'Georgia', 'Playfair Display', serif; font-size: 1.375rem; font-weight: 700; font-style: italic; color: #FEF6F2; background: #7A2E14; padding: 6px 16px; border-radius: 6px; text-decoration: none; letter-spacing: 0.01em; display: inline-block; }
+  .logo-tagline { font-size: 0.6875rem; color: var(--text-muted); line-height: 1.35; margin-top: 4px; text-align: center; }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a { font-size: 0.875rem; color: var(--text-mid); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--terra-deep); font-weight: 500; }
+  .nav-auth { display: flex; align-items: center; gap: 0.75rem; }
+  .nav-cta { background: var(--terra-mid); color: white; padding: 8px 20px; border-radius: 100px; font-size: 0.8125rem; text-decoration: none; }
+  .nav-signout { font-size: 0.8125rem; color: var(--text-muted); background: none; border: 1px solid var(--border-soft); padding: 5px 12px; border-radius: 100px; cursor: pointer; font-family: 'Inter', sans-serif; }
+
+  /* PAGE LAYOUT */
+  .page-wrap { max-width: 760px; margin: 0 auto; padding: 3rem 2rem 5rem; }
+
+  .page-hero { margin-bottom: 2.5rem; }
+  .page-eyebrow { font-size: 0.75rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--terra-mid); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+  .page-eyebrow::before { content: ''; display: inline-block; width: 24px; height: 1px; background: var(--terra-mid); }
+  .page-title { font-family: 'Playfair Display', serif; font-size: clamp(1.75rem, 3.5vw, 2.5rem); font-weight: 400; color: var(--text-dark); line-height: 1.25; margin-bottom: 0.75rem; }
+  .page-title em { font-style: italic; color: var(--terra-mid); }
+  .page-sub { font-size: 1rem; color: var(--text-mid); line-height: 1.8; max-width: 560px; }
+
+  /* COMPOSE BOX */
+  .compose-box { background: white; border: 1px solid var(--border-soft); border-radius: 20px; padding: 1.5rem; margin-bottom: 2rem; }
+  .compose-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+  .compose-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--terra-pale); display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 500; color: var(--terra-deep); flex-shrink: 0; }
+  .compose-prompt { font-size: 0.9375rem; color: var(--text-muted); }
+  .compose-box textarea { width: 100%; border: 1.5px solid var(--border-soft); border-radius: 12px; background: var(--terra-ivory); font-family: 'Inter', sans-serif; font-size: 0.9375rem; color: var(--text-dark); resize: none; min-height: 80px; outline: none; padding: 12px 14px; line-height: 1.6; transition: border-color 0.2s; }
+  .compose-box textarea:focus { border-color: var(--terra-mid); }
+  .compose-box textarea::placeholder { color: var(--text-muted); }
+  .compose-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 0.875rem; }
+  .compose-note { font-size: 0.8125rem; color: var(--text-muted); }
+  .btn-post { background: var(--terra-mid); color: white; border: none; padding: 10px 28px; border-radius: 100px; font-size: 0.9rem; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: background 0.2s; }
+  .btn-post:hover { background: var(--terra-deep); }
+  .btn-post:disabled { background: var(--terra-pale); cursor: not-allowed; }
+
+  .login-note { background: var(--terra-cream); border: 1px solid var(--border-soft); border-radius: 16px; padding: 1.25rem 1.5rem; font-size: 0.9375rem; color: var(--text-mid); text-align: center; margin-bottom: 2rem; }
+  .login-note a { color: var(--terra-mid); text-decoration: none; font-weight: 500; }
+
+  /* FEED */
+  .feed { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .post-card { background: white; border: 1px solid var(--border-soft); border-radius: 18px; padding: 1.5rem; position: relative; }
+  .post-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.875rem; }
+  .post-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--terra-pale); display: flex; align-items: center; justify-content: center; font-size: 0.875rem; font-weight: 500; color: var(--terra-deep); flex-shrink: 0; }
+  .post-author { font-size: 0.9375rem; font-weight: 500; color: var(--text-dark); }
+  .post-time { font-size: 0.8125rem; color: var(--text-muted); }
+  .post-content { font-size: 1rem; color: var(--text-mid); line-height: 1.75; margin-bottom: 1rem; white-space: pre-wrap; }
+
+  /* REACTIONS */
+  .reactions-row { display: flex; align-items: center; gap: 0.375rem; flex-wrap: wrap; margin-bottom: 0.875rem; }
+  .reaction-chip { display: flex; align-items: center; gap: 4px; background: var(--terra-cream); border: 1px solid var(--border-soft); border-radius: 100px; padding: 4px 12px; font-size: 0.875rem; cursor: pointer; transition: all 0.2s; }
+  .reaction-chip:hover { border-color: var(--terra-mid); }
+  .reaction-chip.mine { background: var(--terra-pale); border-color: var(--terra-mid); }
+  .react-add { display: flex; align-items: center; gap: 4px; background: none; border: 1px dashed var(--border-soft); border-radius: 100px; padding: 4px 12px; font-size: 0.875rem; cursor: pointer; color: var(--text-muted); transition: all 0.2s; }
+  .react-add:hover { border-color: var(--terra-mid); color: var(--terra-mid); }
+  .emoji-picker-inline { display: none; align-items: center; gap: 4px; background: white; border: 1px solid var(--border-soft); border-radius: 100px; padding: 4px 10px; }
+  .emoji-picker-inline.open { display: inline-flex; }
+  .emoji-picker-inline button { background: none; border: none; font-size: 1.125rem; cursor: pointer; padding: 2px 3px; border-radius: 6px; }
+  .emoji-picker-inline button:hover { background: var(--terra-cream); }
+
+  /* REPLIES */
+  .replies-section { border-top: 1px solid var(--border-soft); padding-top: 1rem; }
+  .toggle-replies-btn { font-size: 0.875rem; color: var(--terra-mid); background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 0.75rem; font-family: 'Inter', sans-serif; }
+  .toggle-replies-btn:hover { color: var(--terra-deep); }
+  .replies-list { display: flex; flex-direction: column; gap: 0.75rem; margin-bottom: 0.875rem; }
+  .reply-item { display: flex; gap: 0.625rem; }
+  .reply-avatar { width: 28px; height: 28px; border-radius: 50%; background: var(--terra-cream); display: flex; align-items: center; justify-content: center; font-size: 0.6875rem; font-weight: 500; color: var(--terra-deep); flex-shrink: 0; margin-top: 2px; }
+  .reply-body { flex: 1; }
+  .reply-author { font-size: 0.875rem; font-weight: 500; color: var(--text-dark); margin-right: 6px; }
+  .reply-text { font-size: 0.875rem; color: var(--text-mid); line-height: 1.6; }
+  .reply-time { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+  .reply-input-row { display: flex; gap: 0.625rem; align-items: center; }
+  .reply-avatar-sm { width: 28px; height: 28px; border-radius: 50%; background: var(--terra-pale); display: flex; align-items: center; justify-content: center; font-size: 0.6875rem; font-weight: 500; color: var(--terra-deep); flex-shrink: 0; }
+  .reply-input { flex: 1; border: 1.5px solid var(--border-soft); border-radius: 100px; padding: 8px 16px; font-size: 0.875rem; font-family: 'Inter', sans-serif; outline: none; background: var(--terra-ivory); transition: border-color 0.2s; }
+  .reply-input:focus { border-color: var(--terra-mid); }
+  .reply-send-btn { background: var(--terra-mid); color: white; border: none; padding: 8px 18px; border-radius: 100px; font-size: 0.8125rem; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; }
+
+  /* ADMIN */
+  .admin-del-post { position: absolute; top: 14px; right: 14px; background: none; border: none; font-size: 0.75rem; color: #A32D2D; cursor: pointer; opacity: 0.6; padding: 2px 6px; }
+  .admin-del-post:hover { opacity: 1; }
+  .admin-del-reply { font-size: 0.75rem; color: #A32D2D; background: none; border: none; cursor: pointer; margin-left: 8px; opacity: 0.6; }
+  .admin-del-reply:hover { opacity: 1; }
+
+  .loading-msg { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.9375rem; }
+  .empty-msg { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.9375rem; }
+
+  .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--terra-deep); color: white; padding: 12px 24px; border-radius: 100px; font-size: 0.9375rem; z-index: 300; transition: transform 0.3s; pointer-events: none; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 640px) {
+    .page-wrap { padding: 2rem 1.25rem 3rem; }
+    nav { padding: 0.75rem 1.25rem; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo-wrap">
+    <a href="index.html" class="nav-logo">SunRi-Ssakhi</a>
+    <p class="logo-tagline">A place to pause.<br>A place to breathe.<br>A place to be heard.</p>
+  </div>
+  <ul class="nav-links">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="index.html#stories">Stories</a></li>
+    <li><a href="index.html#work">Work</a></li>
+    <li><a href="community.html" class="active">Community</a></li>
+  </ul>
+  <div class="nav-auth" id="nav-auth">
+    <div id="nav-logged-out" style="display:flex; gap:0.75rem; align-items:center;">
+      <a href="index.html" style="font-size:0.875rem; color:var(--text-mid); text-decoration:none;">Sign in</a>
+      <a href="index.html" class="nav-cta">Join</a>
+    </div>
+    <div id="nav-logged-in" style="display:none; align-items:center; gap:0.75rem;">
+      <a href="my-page.html" style="font-size:0.875rem; color:var(--text-mid); text-decoration:none;" id="nav-user-name"></a>
+      <button class="nav-signout" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-hero">
+    <p class="page-eyebrow">Community</p>
+    <h1 class="page-title">What are you feeling <em>today?</em></h1>
+    <p class="page-sub">Share a thought, a small win, a question, a feeling — anything on your mind. This is your space to be real, in any language.</p>
+  </div>
+
+  <div id="compose-area"></div>
+  <div class="feed" id="feed"><p class="loading-msg">Loading...</p></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://lcdwzdmxkpqgstlxjmyq.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_3iDkjlu4yEkgkgvr6WlEOQ_hZNhaNU6';
+  const ADMIN_EMAIL = 'ambica.clc@gmail.com';
+  const REACTION_EMOJIS = ['❤️', '🎉', '🙌', '🤗', '💪', '😊', '🌸', '✨'];
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentUser = null;
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function getInitials(name) {
+    if (!name) return '?';
+    return name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+  }
+
+  function timeAgo(dateStr) {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return mins + 'm ago';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ago';
+    const days = Math.floor(hrs / 24);
+    return days + 'd ago';
+  }
+
+  function isAdmin() {
+    return currentUser && currentUser.email === ADMIN_EMAIL;
+  }
+
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.appendChild(document.createTextNode(text || ''));
+    return div.innerHTML;
+  }
+
+  function updateNavAuth() {
+    const out = document.getElementById('nav-logged-out');
+    const inn = document.getElementById('nav-logged-in');
+    const nameEl = document.getElementById('nav-user-name');
+    if (currentUser) {
+      out.style.display = 'none';
+      inn.style.display = 'flex';
+      const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+      if (nameEl) nameEl.textContent = name;
+    } else {
+      out.style.display = 'flex';
+      inn.style.display = 'none';
+    }
+  }
+
+  async function signOut() {
+    await db.auth.signOut();
+    currentUser = null;
+    updateNavAuth();
+    renderCompose();
+    loadFeed();
+  }
+
+  function renderCompose() {
+    const area = document.getElementById('compose-area');
+    if (!currentUser) {
+      area.innerHTML = `<div class="login-note">Sign in to share what's on your mind. <a href="index.html">Join SunRi-Ssakhi</a></div>`;
+      return;
+    }
+    const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+    area.innerHTML = `
+      <div class="compose-box">
+        <div class="compose-header">
+          <div class="compose-avatar">${getInitials(name)}</div>
+          <span class="compose-prompt">What's on your mind today, ${name.split(' ')[0]}?</span>
+        </div>
+        <textarea id="compose-input" placeholder="Write freely — a thought, a win, a feeling, a question. In any language."></textarea>
+        <div class="compose-footer">
+          <span class="compose-note">Visible to all members</span>
+          <button class="btn-post" id="post-btn" onclick="submitPost()">Share</button>
+        </div>
+      </div>
+    `;
+  }
+
+  async function submitPost() {
+    if (!currentUser) return;
+    const input = document.getElementById('compose-input');
+    const text = input?.value.trim();
+    if (!text) return;
+
+    const btn = document.getElementById('post-btn');
+    btn.disabled = true; btn.textContent = 'Sharing...';
+
+    const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+    const { error } = await db.from('community_posts').insert([{
+      user_id: currentUser.id, author_name: name, content: text
+    }]);
+
+    btn.disabled = false; btn.textContent = 'Share';
+    if (!error) { input.value = ''; loadFeed(); }
+  }
+
+  function toggleReactionPicker(postId) {
+    document.querySelectorAll('.emoji-picker-inline').forEach(p => {
+      if (p.id !== 'picker-' + postId) p.classList.remove('open');
+    });
+    document.getElementById('picker-' + postId)?.classList.toggle('open');
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.reactions-row')) {
+      document.querySelectorAll('.emoji-picker-inline').forEach(p => p.classList.remove('open'));
+    }
+  });
+
+  function toggleReplies(postId) {
+    const el = document.getElementById('replies-body-' + postId);
+    if (!el) return;
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    const btn = document.getElementById('toggle-btn-' + postId);
+    if (btn) btn.textContent = el.style.display === 'none' ? btn.dataset.show : btn.dataset.hide;
+  }
+
+  async function toggleReaction(postId, emoji) {
+    if (!currentUser) { showToast('Sign in to react.'); return; }
+    const { data: existing } = await db.from('post_reactions').select('id').eq('post_id', postId).eq('user_id', currentUser.id).eq('emoji', emoji).single();
+    if (existing) {
+      await db.from('post_reactions').delete().eq('id', existing.id);
+    } else {
+      await db.from('post_reactions').insert([{ post_id: postId, user_id: currentUser.id, emoji }]);
+    }
+    loadFeed();
+  }
+
+  async function postReply(postId) {
+    if (!currentUser) return;
+    const input = document.getElementById('reply-input-' + postId);
+    const text = input?.value.trim();
+    if (!text) return;
+    const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+    await db.from('post_replies').insert([{ post_id: postId, user_id: currentUser.id, author_name: name, content: text }]);
+    input.value = '';
+    loadFeed();
+  }
+
+  async function adminDeletePost(id) {
+    if (!confirm('Delete this post?')) return;
+    await db.from('community_posts').delete().eq('id', id);
+    loadFeed();
+    showToast('Post deleted.');
+  }
+
+  async function adminDeleteReply(id) {
+    if (!confirm('Delete this reply?')) return;
+    await db.from('post_replies').delete().eq('id', id);
+    loadFeed();
+    showToast('Reply deleted.');
+  }
+
+  async function loadFeed() {
+    const { data: posts } = await db.from('community_posts').select('*').order('created_at', { ascending: false }).limit(50);
+    const feed = document.getElementById('feed');
+    if (!posts || posts.length === 0) {
+      feed.innerHTML = '<p class="empty-msg">Nothing shared yet. Be the first to say something.</p>';
+      return;
+    }
+
+    const postIds = posts.map(p => p.id);
+    const [reactRes, replyRes] = await Promise.all([
+      db.from('post_reactions').select('*').in('post_id', postIds),
+      db.from('post_replies').select('*').in('post_id', postIds).order('created_at', { ascending: true })
+    ]);
+
+    const allReactions = reactRes.data || [];
+    const allReplies = replyRes.data || [];
+    const myName = currentUser ? (currentUser.user_metadata?.full_name || currentUser.email.split('@')[0]) : '';
+
+    feed.innerHTML = posts.map(p => {
+      const reactions = allReactions.filter(r => r.post_id === p.id);
+      const grouped = {};
+      reactions.forEach(r => { grouped[r.emoji] = (grouped[r.emoji] || 0) + 1; });
+      const myReactions = currentUser ? reactions.filter(r => r.user_id === currentUser.id).map(r => r.emoji) : [];
+      const replies = allReplies.filter(r => r.post_id === p.id);
+      const replyCount = replies.length;
+
+      return `
+        <div class="post-card">
+          ${isAdmin() ? `<button class="admin-del-post" onclick="adminDeletePost(${p.id})">Delete</button>` : ''}
+          <div class="post-header">
+            <div class="post-avatar">${getInitials(p.author_name)}</div>
+            <div>
+              <p class="post-author">${p.author_name || 'Anonymous'}</p>
+              <p class="post-time">${timeAgo(p.created_at)}</p>
+            </div>
+          </div>
+          <p class="post-content">${escapeHtml(p.content)}</p>
+          <div class="reactions-row" id="reactions-${p.id}">
+            ${Object.entries(grouped).map(([emoji, count]) => `
+              <button class="reaction-chip ${myReactions.includes(emoji) ? 'mine' : ''}" onclick="toggleReaction(${p.id}, '${emoji}')">${emoji} <span>${count}</span></button>
+            `).join('')}
+            <button class="react-add" onclick="toggleReactionPicker(${p.id})">+ React</button>
+            <span class="emoji-picker-inline" id="picker-${p.id}">
+              ${REACTION_EMOJIS.map(e => `<button onclick="toggleReaction(${p.id}, '${e}')">${e}</button>`).join('')}
+            </span>
+          </div>
+          <div class="replies-section">
+            ${replyCount > 0 ? `<button class="toggle-replies-btn" id="toggle-btn-${p.id}" data-show="Show ${replyCount} response${replyCount === 1 ? '' : 's'}" data-hide="Hide responses" onclick="toggleReplies(${p.id})">Show ${replyCount} response${replyCount === 1 ? '' : 's'}</button>` : ''}
+            <div id="replies-body-${p.id}" style="display:none;">
+              <div class="replies-list">
+                ${replies.map(r => `
+                  <div class="reply-item">
+                    <div class="reply-avatar">${getInitials(r.author_name)}</div>
+                    <div class="reply-body">
+                      <span class="reply-author">${r.author_name || 'Anonymous'}</span>
+                      <span class="reply-text">${escapeHtml(r.content)}</span>
+                      ${isAdmin() ? `<button class="admin-del-reply" onclick="adminDeleteReply(${r.id})">Delete</button>` : ''}
+                      <p class="reply-time">${timeAgo(r.created_at)}</p>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+            ${currentUser ? `
+              <div class="reply-input-row">
+                <div class="reply-avatar-sm">${getInitials(myName)}</div>
+                <input type="text" class="reply-input" id="reply-input-${p.id}" placeholder="Write a response..." onkeydown="if(event.key==='Enter') postReply(${p.id})">
+                <button class="reply-send-btn" onclick="postReply(${p.id})">Reply</button>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  db.auth.onAuthStateChange((event, session) => {
+    currentUser = session?.user || null;
+    updateNavAuth();
+    renderCompose();
+    loadFeed();
+  });
+
+  db.auth.getSession().then(({ data: { session } }) => {
+    currentUser = session?.user || null;
+    updateNavAuth();
+    renderCompose();
+    loadFeed();
+  });
+</script>
+</body>
+</html>
