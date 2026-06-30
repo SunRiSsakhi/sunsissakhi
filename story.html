@@ -204,6 +204,13 @@
   .comment-like-btn:hover { border-color: var(--terra-mid); color: var(--terra-mid); }
   .comment-like-btn.active { background: var(--terra-cream); border-color: var(--terra-mid); color: var(--terra-mid); }
 
+  /* ADMIN INLINE CONTROLS */
+  .admin-delete-story { background: #FCEBEB; border: 1px solid #f0c0c0; color: #A32D2D; font-size: 0.8125rem; padding: 6px 16px; border-radius: 100px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .admin-delete-story:hover { background: #A32D2D; color: white; }
+  .comment-card { position: relative; }
+  .admin-delete-comment { position: absolute; top: 14px; right: 14px; background: none; border: none; color: #A32D2D; font-size: 0.8125rem; cursor: pointer; opacity: 0.6; }
+  .admin-delete-comment:hover { opacity: 1; }
+
   /* FOOTER */
   footer { background: var(--text-dark); color: rgba(255,255,255,0.5); padding: 2rem; text-align: center; font-size: 0.8125rem; }
   .footer-logo { font-family: 'Playfair Display', serif; font-size: 1.125rem; color: white; margin-bottom: 0.25rem; }
@@ -355,6 +362,7 @@
     } else {
       list.innerHTML = data.map(c => `
         <div class="comment-card" id="cc-${c.id}">
+          ${isAdmin() ? `<button class="admin-delete-comment" onclick="adminDeleteComment(${c.id}, ${storyId})">Delete</button>` : ''}
           <div class="comment-header">
             <div class="comment-avatar">${getInitials(c.author_name)}</div>
             <span class="comment-author">${c.author_name || 'Anonymous'}</span>
@@ -490,6 +498,19 @@
     return new Date(str).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 
+
+  async function adminDeleteThisStory(id) {
+    if (!confirm('Delete this story permanently? You will be returned to the home page.')) return;
+    await db.from('Stories').delete().eq('id', id);
+    window.location.href = 'index.html#stories';
+  }
+
+  async function adminDeleteComment(id, storyId) {
+    if (!confirm('Delete this comment permanently?')) return;
+    await db.from('comments').delete().eq('id', id);
+    loadComments(storyId);
+  }
+
   async function loadStory() {
     const params = new URLSearchParams(window.location.search);
     const id = params.get('id');
@@ -545,7 +566,10 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
             Back to all stories
           </a>
-          <button class="share-btn" onclick="shareStory()">Share this story</button>
+          <div style="display:flex; gap:0.75rem;">
+            ${isAdmin() ? `<button class="admin-delete-story" onclick="adminDeleteThisStory(${s.id})">Delete story</button>` : ''}
+            <button class="share-btn" onclick="shareStory()">Share this story</button>
+          </div>
         </div>
       </div>
     `;
