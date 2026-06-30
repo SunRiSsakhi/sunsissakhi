@@ -267,9 +267,11 @@
       <a href="#" class="nav-cta" onclick="openAuthModal('signup'); return false;">Join SunRi-Ssakhi</a>
     </div>
     <div id="nav-logged-in" style="display:none;" class="nav-user">
-      <div class="nav-avatar" id="nav-avatar">?</div>
-      <span class="nav-user-name" id="nav-user-name"></span>
-      <a href="#" class="nav-cta" style="margin-left:0.25rem;" href="write.html">Write</a>
+      <a href="my-page.html" style="display:flex; align-items:center; gap:0.5rem; text-decoration:none;">
+        <div class="nav-avatar" id="nav-avatar">?</div>
+        <span class="nav-user-name" id="nav-user-name"></span>
+      </a>
+      <a href="write.html" class="nav-cta" style="margin-left:0.25rem;">Write</a>
       <button class="nav-signout" onclick="signOut()">Sign out</button>
     </div>
   </div>

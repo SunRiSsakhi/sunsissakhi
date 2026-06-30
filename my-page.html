@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Page — SunRi-Ssakhi</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --terra-deep: #7A2E14; --terra-mid: #C0623A; --terra-light: #F4A98A;
+    --terra-pale: #F9CBB8; --terra-cream: #FEF6F2; --terra-ivory: #FFFAF8;
+    --text-dark: #2A1208; --text-mid: #5C3520; --text-muted: #9B6B58;
+    --border-soft: #F0D0C0;
+    --green: #2D7A3A; --green-bg: #EAF5EC;
+    --amber: #9A6B1E; --amber-bg: #FBF2E0;
+    --red: #A32D2D; --red-bg: #FCEBEB;
+  }
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', sans-serif; background: var(--terra-ivory); color: var(--text-dark); line-height: 1.7; min-height: 100vh; }
+
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(255,250,248,0.95); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border-soft);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between; height: 60px;
+  }
+  .nav-logo { font-family: 'Georgia', 'Playfair Display', serif; font-size: 1.375rem; font-weight: 700; font-style: italic; color: #FEF6F2; background: #7A2E14; padding: 6px 16px; border-radius: 6px; text-decoration: none; letter-spacing: 0.01em; }
+  .nav-back { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+  .nav-back:hover { color: var(--terra-mid); }
+  .nav-back svg { width: 16px; height: 16px; }
+
+  .page-wrap { max-width: 880px; margin: 0 auto; padding: 3.5rem 2rem 5rem; }
+
+  .page-header { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 2.5rem; }
+  .page-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--terra-pale); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 500; color: var(--terra-deep); flex-shrink: 0; }
+  .page-title { font-family: 'Playfair Display', serif; font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 500; color: var(--text-dark); margin-bottom: 0.25rem; }
+  .page-sub { font-size: 0.9375rem; color: var(--text-muted); }
+
+  /* AUTH GATE */
+  .auth-gate { text-align: center; padding: 3rem 2rem; background: white; border: 1px solid var(--border-soft); border-radius: 16px; }
+  .auth-gate h2 { font-family: 'Playfair Display', serif; font-size: 1.375rem; font-weight: 500; color: var(--text-dark); margin-bottom: 0.75rem; }
+  .auth-gate p { font-size: 0.9375rem; color: var(--text-mid); margin-bottom: 1.5rem; }
+  .btn-join { display: inline-block; background: var(--terra-mid); color: white; padding: 13px 28px; border-radius: 100px; font-size: 0.9375rem; font-weight: 500; text-decoration: none; transition: background 0.2s; }
+  .btn-join:hover { background: var(--terra-deep); }
+
+  /* STATS */
+  .my-stats { display: flex; gap: 2rem; margin-bottom: 2.5rem; padding: 1.5rem; background: var(--terra-cream); border: 1px solid var(--border-soft); border-radius: 16px; }
+  .my-stat { text-align: center; flex: 1; }
+  .my-stat-num { font-family: 'Playfair Display', serif; font-size: 1.75rem; font-weight: 500; color: var(--terra-deep); display: block; }
+  .my-stat-label { font-size: 0.8125rem; color: var(--text-muted); }
+
+  /* TABS */
+  .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .tab { padding: 8px 20px; border-radius: 100px; font-size: 0.875rem; border: 1px solid var(--border-soft); background: white; cursor: pointer; color: var(--text-mid); font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .tab.active { background: var(--terra-mid); color: white; border-color: var(--terra-mid); }
+  .tab-count { display: inline-block; background: var(--terra-pale); color: var(--terra-deep); font-size: 0.75rem; padding: 1px 7px; border-radius: 100px; margin-left: 6px; }
+  .tab.active .tab-count { background: rgba(255,255,255,0.3); color: white; }
+
+  /* ITEM CARDS */
+  .items-list { display: flex; flex-direction: column; gap: 1rem; }
+  .item-card { background: white; border: 1px solid var(--border-soft); border-radius: 16px; padding: 1.5rem; display: flex; gap: 1.25rem; align-items: flex-start; }
+  .item-img { width: 80px; height: 80px; border-radius: 10px; object-fit: cover; flex-shrink: 0; background: var(--terra-cream); }
+  .item-body { flex: 1; min-width: 0; }
+  .item-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 0.5rem; }
+  .item-title { font-family: 'Playfair Display', serif; font-size: 1.0625rem; font-weight: 500; color: var(--text-dark); }
+  .item-excerpt { font-size: 0.875rem; color: var(--text-mid); line-height: 1.6; margin-bottom: 0.625rem; }
+  .item-meta { font-size: 0.8125rem; color: var(--text-muted); }
+
+  .status-badge { display: inline-block; font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 10px; border-radius: 100px; flex-shrink: 0; }
+  .status-pending { background: var(--amber-bg); color: var(--amber); }
+  .status-approved { background: var(--green-bg); color: var(--green); }
+  .status-rejected { background: var(--red-bg); color: var(--red); }
+
+  .item-actions { display: flex; gap: 0.625rem; margin-top: 0.75rem; }
+  .btn-delete-item { font-size: 0.8125rem; color: var(--red); background: var(--red-bg); border: 1px solid #f0c0c0; padding: 6px 16px; border-radius: 100px; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+  .btn-delete-item:hover { background: var(--red); color: white; }
+  .btn-view-item { font-size: 0.8125rem; color: var(--terra-mid); background: none; border: 1px solid var(--border-soft); padding: 6px 16px; border-radius: 100px; cursor: pointer; font-family: 'Inter', sans-serif; text-decoration: none; transition: all 0.2s; }
+  .btn-view-item:hover { border-color: var(--terra-mid); }
+
+  .item-menu-wrap { position: relative; flex-shrink: 0; }
+  .item-menu-btn { background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 8px; color: var(--text-muted); font-size: 1.125rem; line-height: 1; transition: background 0.2s; }
+  .item-menu-btn:hover { background: var(--terra-cream); color: var(--text-dark); }
+  .item-dropdown { display: none; position: absolute; top: 100%; right: 0; background: white; border: 1px solid var(--border-soft); border-radius: 10px; box-shadow: 0 8px 24px rgba(122,46,20,0.12); min-width: 140px; z-index: 10; overflow: hidden; margin-top: 4px; }
+  .item-dropdown.open { display: block; }
+  .item-dropdown button, .item-dropdown a { display: block; width: 100%; text-align: left; padding: 10px 14px; font-size: 0.875rem; background: none; border: none; cursor: pointer; color: var(--text-mid); font-family: 'Inter', sans-serif; text-decoration: none; }
+  .item-dropdown button:hover, .item-dropdown a:hover { background: var(--terra-cream); }
+  .item-dropdown .danger { color: var(--red); }
+  .item-dropdown .danger:hover { background: var(--red-bg); }
+
+  .empty-state { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.9375rem; background: white; border: 1px solid var(--border-soft); border-radius: 16px; }
+  .loading-state { text-align: center; padding: 3rem; color: var(--text-muted); font-size: 0.9375rem; }
+
+  /* DRAFT BANNER */
+  .draft-banner { background: white; border: 1px dashed var(--terra-mid); border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .draft-banner-left { flex: 1; min-width: 200px; }
+  .draft-banner-tag { font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--terra-mid); margin-bottom: 0.375rem; }
+  .draft-banner-title { font-family: 'Playfair Display', serif; font-size: 1.0625rem; font-weight: 500; color: var(--text-dark); margin-bottom: 0.25rem; }
+  .draft-banner-meta { font-size: 0.8125rem; color: var(--text-muted); }
+  .btn-continue { background: var(--terra-mid); color: white; padding: 10px 22px; border-radius: 100px; font-size: 0.875rem; font-weight: 500; text-decoration: none; transition: background 0.2s; }
+  .btn-continue:hover { background: var(--terra-deep); }
+
+  .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--terra-deep); color: white; padding: 12px 24px; border-radius: 100px; font-size: 0.9375rem; z-index: 300; transition: transform 0.3s; pointer-events: none; }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (max-width: 640px) {
+    .page-wrap { padding: 2rem 1.25rem 3rem; }
+    nav { padding: 0 1.25rem; }
+    .my-stats { flex-wrap: wrap; gap: 1rem; }
+    .item-card { flex-direction: column; }
+    .item-img { width: 100%; height: 160px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">SunRi-Ssakhi</a>
+  <a href="index.html" class="nav-back">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
+    Home
+  </a>
+</nav>
+
+<div class="page-wrap" id="page-wrap">
+  <div class="auth-gate" id="auth-gate">
+    <h2>Sign in to see your page</h2>
+    <p>My Page shows everything you have written and shared with SunRi-Ssakhi.</p>
+    <a href="index.html" class="btn-join">Join SunRi-Ssakhi</a>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://lcdwzdmxkpqgstlxjmyq.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_3iDkjlu4yEkgkgvr6WlEOQ_hZNhaNU6';
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentUser = null;
+  let myStories = [];
+  let myWork = [];
+  let currentTab = 'stories';
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function getInitials(name) {
+    if (!name) return '?';
+    return name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+  }
+
+  function truncate(text, len) {
+    if (!text) return '';
+    return text.length > len ? text.slice(0, len) + '…' : text;
+  }
+
+  function formatDate(str) {
+    return new Date(str).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function timeAgo(dateStr) {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'just now';
+    if (mins < 60) return mins + ' min ago';
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + ' hr ago';
+    const days = Math.floor(hrs / 24);
+    return days + ' day' + (days === 1 ? '' : 's') + ' ago';
+  }
+
+  async function loadMyPage() {
+    const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+
+    document.getElementById('page-wrap').innerHTML = `
+      <div class="page-header">
+        <div class="page-avatar">${getInitials(name)}</div>
+        <div>
+          <h1 class="page-title">${name}</h1>
+          <p class="page-sub">Everything you have written and shared</p>
+        </div>
+      </div>
+      <div id="draft-banner-area"></div>
+      <div class="my-stats" id="my-stats">
+        <div class="my-stat"><span class="my-stat-num" id="stat-stories">—</span><span class="my-stat-label">Stories</span></div>
+        <div class="my-stat"><span class="my-stat-num" id="stat-work">—</span><span class="my-stat-label">Work shared</span></div>
+        <div class="my-stat"><span class="my-stat-num" id="stat-pending">—</span><span class="my-stat-label">Awaiting review</span></div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('stories', this)">Stories <span class="tab-count" id="tab-stories-count">0</span></button>
+        <button class="tab" onclick="switchTab('work', this)">Work <span class="tab-count" id="tab-work-count">0</span></button>
+      </div>
+      <div class="items-list" id="items-list"><p class="loading-state">Loading...</p></div>
+    `;
+
+    const [storiesRes, workRes, draftRes] = await Promise.all([
+      db.from('Stories').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }),
+      db.from('work').select('*').eq('user_id', currentUser.id).order('created_at', { ascending: false }),
+      db.from('drafts').select('*').eq('user_id', currentUser.id).single()
+    ]);
+
+    myStories = storiesRes.data || [];
+    myWork = workRes.data || [];
+
+    document.getElementById('stat-stories').textContent = myStories.filter(s => s.status === 'approved').length;
+    document.getElementById('stat-work').textContent = myWork.filter(w => w.status === 'approved').length;
+    document.getElementById('stat-pending').textContent =
+      myStories.filter(s => s.status === 'pending').length + myWork.filter(w => w.status === 'pending').length;
+    document.getElementById('tab-stories-count').textContent = myStories.length;
+    document.getElementById('tab-work-count').textContent = myWork.length;
+
+    if (draftRes.data && (draftRes.data.title || draftRes.data.content)) {
+      const d = draftRes.data;
+      document.getElementById('draft-banner-area').innerHTML = `
+        <div class="draft-banner">
+          <div class="draft-banner-left">
+            <p class="draft-banner-tag">Draft in progress</p>
+            <p class="draft-banner-title">${d.title || 'Untitled story'}</p>
+            <p class="draft-banner-meta">Last edited ${timeAgo(d.updated_at)} · ${(d.content || '').trim().split(/\\s+/).filter(Boolean).length} words</p>
+          </div>
+          <a href="write.html" class="btn-continue">Continue writing →</a>
+        </div>
+      `;
+    }
+
+    renderTab('stories');
+  }
+
+  function switchTab(tab, el) {
+    currentTab = tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    renderTab(tab);
+  }
+
+  function renderTab(tab) {
+    const list = document.getElementById('items-list');
+    if (tab === 'stories') {
+      if (myStories.length === 0) {
+        list.innerHTML = `<div class="empty-state">You have not written any stories yet. <br><br><a href="write.html" class="btn-continue" style="display:inline-block;">Write your first story</a></div>`;
+        return;
+      }
+      list.innerHTML = myStories.map(s => `
+        <div class="item-card">
+          <div class="item-body">
+            <div class="item-top">
+              <span class="item-title">${s.title || 'Untitled'}</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="status-badge status-${s.status}">${s.status}</span>
+                <div class="item-menu-wrap">
+                  <button class="item-menu-btn" onclick="toggleMenu(event, 'story-${s.id}')">⋯</button>
+                  <div class="item-dropdown" id="menu-story-${s.id}">
+                    ${s.status === 'approved' ? `<a href="story.html?id=${s.id}">View story</a>` : ''}
+                    <button class="danger" onclick="deleteStory(${s.id})">Delete</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="item-excerpt">${truncate(s.content, 140)}</p>
+            <p class="item-meta">${s.language || ''} · ${formatDate(s.created_at)}</p>
+          </div>
+        </div>
+      `).join('');
+    } else {
+      if (myWork.length === 0) {
+        list.innerHTML = `<div class="empty-state">You have not shared any work yet. <br><br><a href="work.html" class="btn-continue" style="display:inline-block;">Share your work</a></div>`;
+        return;
+      }
+      list.innerHTML = myWork.map(w => `
+        <div class="item-card">
+          <img src="${w.image_url}" class="item-img" alt="${w.title}">
+          <div class="item-body">
+            <div class="item-top">
+              <span class="item-title">${w.title}</span>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="status-badge status-${w.status}">${w.status}</span>
+                <div class="item-menu-wrap">
+                  <button class="item-menu-btn" onclick="toggleMenu(event, 'work-${w.id}')">⋯</button>
+                  <div class="item-dropdown" id="menu-work-${w.id}">
+                    <button class="danger" onclick="deleteWork(${w.id})">Delete</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="item-excerpt">${truncate(w.description || '', 140)}</p>
+            <p class="item-meta">${w.category || ''} · ${formatDate(w.created_at)}</p>
+          </div>
+        </div>
+      `).join('');
+    }
+  }
+
+
+  function toggleMenu(event, id) {
+    event.stopPropagation();
+    const menu = document.getElementById('menu-' + id);
+    const isOpen = menu.classList.contains('open');
+    document.querySelectorAll('.item-dropdown').forEach(m => m.classList.remove('open'));
+    if (!isOpen) menu.classList.add('open');
+  }
+
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.item-dropdown').forEach(m => m.classList.remove('open'));
+  });
+
+  async function deleteStory(id) {
+    if (!confirm('Delete this story? This cannot be undone.')) return;
+    const { error } = await db.from('Stories').delete().eq('id', id).eq('user_id', currentUser.id);
+    if (error) { showToast('Something went wrong.'); return; }
+    myStories = myStories.filter(s => s.id !== id);
+    document.getElementById('tab-stories-count').textContent = myStories.length;
+    document.getElementById('stat-stories').textContent = myStories.filter(s => s.status === 'approved').length;
+    document.getElementById('stat-pending').textContent =
+      myStories.filter(s => s.status === 'pending').length + myWork.filter(w => w.status === 'pending').length;
+    renderTab(currentTab);
+    showToast('Story deleted.');
+  }
+
+  async function deleteWork(id) {
+    if (!confirm('Delete this work? This cannot be undone.')) return;
+    const { error } = await db.from('work').delete().eq('id', id).eq('user_id', currentUser.id);
+    if (error) { showToast('Something went wrong.'); return; }
+    myWork = myWork.filter(w => w.id !== id);
+    document.getElementById('tab-work-count').textContent = myWork.length;
+    document.getElementById('stat-work').textContent = myWork.filter(w => w.status === 'approved').length;
+    document.getElementById('stat-pending').textContent =
+      myStories.filter(s => s.status === 'pending').length + myWork.filter(w => w.status === 'pending').length;
+    renderTab(currentTab);
+    showToast('Work deleted.');
+  }
+
+  db.auth.onAuthStateChange((event, session) => {
+    currentUser = session?.user || null;
+    if (currentUser) loadMyPage();
+  });
+
+  db.auth.getSession().then(({ data: { session } }) => {
+    currentUser = session?.user || null;
+    if (currentUser) loadMyPage();
+  });
+</script>
+</body>
+</html>
