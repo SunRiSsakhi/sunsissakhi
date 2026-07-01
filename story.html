@@ -106,8 +106,13 @@
     font-size: clamp(1.0625rem, 2vw, 1.1875rem);
     line-height: 1.95;
     color: var(--text-mid);
-    white-space: pre-wrap;
     word-break: break-word;
+  }
+  .story-body p {
+    margin-bottom: 1.5em;
+  }
+  .story-body p:last-child {
+    margin-bottom: 0;
   }
 
   /* FOOTER NAV */
@@ -558,7 +563,7 @@
           </div>
         </div>
         <div class="story-accent"></div>
-        <div class="story-body">${escapeHtml(s.content)}</div>
+        <div class="story-body">${formatStoryContent(s.content)}</div>
         <a class="translate-btn" href="https://translate.google.com/?sl=auto&tl=en&text=${encodeURIComponent((s.title ? s.title + ': ' : '') + s.content)}&op=translate" target="_blank" rel="noopener">🌐 Translate to English</a>
         <div class="like-bar">
           <span class="like-label">Was this story meaningful to you?</span>
@@ -583,8 +588,20 @@
 
   function escapeHtml(text) {
     const div = document.createElement('div');
-    div.appendChild(document.createTextNode(text));
+    div.appendChild(document.createTextNode(text || ''));
     return div.innerHTML;
+  }
+
+  function formatStoryContent(text) {
+    if (!text) return '';
+    const escaped = escapeHtml(text);
+    // Split on double newlines for paragraphs, single newlines become <br>
+    const paragraphs = escaped.split(/\n\n+/);
+    if (paragraphs.length > 1) {
+      return paragraphs.map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+    }
+    // Single block — wrap in p and convert single newlines to br
+    return `<p>${escaped.replace(/\n/g, '<br>')}</p>`;
   }
 
   function showError(msg) {
