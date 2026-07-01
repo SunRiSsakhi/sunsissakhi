@@ -518,6 +518,9 @@
         <p class="field-error" id="l-error"></p>
       </div>
       <button class="btn-primary" id="l-btn" onclick="signIn()" style="margin-top:0.5rem;">Sign in</button>
+      <p style="text-align:center; margin-top:0.75rem;">
+        <a onclick="sendPasswordReset()" style="font-size:0.8125rem; color:var(--text-muted); cursor:pointer; text-decoration:none;">Forgot your password?</a>
+      </p>
       <p class="auth-switch">New here? <a onclick="switchAuthTab('signup')">Join SunRi-Ssakhi</a></p>
     </div>
   </div>
@@ -670,6 +673,26 @@
 
     closeAuthModal();
     showToast('Welcome to SunRi-Ssakhi! Check your email to confirm your account.');
+  }
+
+
+  async function sendPasswordReset() {
+    const email = document.getElementById('l-email').value.trim();
+    if (!email) {
+      const errEl = document.getElementById('l-error');
+      errEl.textContent = 'Please enter your email address first.';
+      errEl.style.display = 'block';
+      return;
+    }
+    const { error } = await db.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://sunrissakhi.netlify.app/reset-password.html'
+    });
+    if (error) {
+      showToast('Something went wrong. Please try again.');
+    } else {
+      closeAuthModal();
+      showToast('Password reset email sent. Please check your inbox.');
+    }
   }
 
   async function signIn() {
