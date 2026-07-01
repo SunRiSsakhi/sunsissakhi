@@ -343,18 +343,57 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  const editId = new URLSearchParams(window.location.search).get('id');
+
+  async function loadEditStory(user) {
+    await renderForm(user);
+    if (!editId) return;
+
+    document.querySelector('.page-eyebrow') && (document.querySelector('.page-eyebrow').textContent = 'Edit your story');
+    const h1 = document.querySelector('.page-title');
+    if (h1) h1.innerHTML = 'Edit your story';
+
+    const { data, error } = await db.from('Stories').select('*').eq('id', editId).eq('user_id', user.id).single();
+    if (error || !data) { showToast('Story not found or not yours.'); return; }
+
+    const titleEl = document.getElementById('f-title');
+    const contentEl = document.getElementById('f-content');
+    const langEl = document.getElementById('f-language');
+    if (titleEl) titleEl.value = data.title || '';
+    if (contentEl) contentEl.value = data.content || '';
+    if (langEl) langEl.value = data.language || '';
+    updateWordCount();
+
+    const btn = document.getElementById('submit-btn');
+    if (btn) { btn.textContent = 'Save changes'; btn.onclick = () => saveEditStory(editId); }
+  }
+
+  async function saveEditStory(id) {
+    const title = document.getElementById('f-title')?.value.trim();
+    const content = document.getElementById('f-content')?.value.trim();
+    const language = document.getElementById('f-language')?.value.trim();
+    if (!content) { showToast('Please write something.'); return; }
+    if (!language) { showToast('Please enter the language.'); return; }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+
+    const { error } = await db.from('Stories').update({ title: title || 'Untitled', content, language }).eq('id', id).eq('user_id', currentUser.id);
+    btn.disabled = false; btn.textContent = 'Save changes';
+
+    if (error) { showToast('Something went wrong.'); return; }
+    showToast('Story updated successfully.');
+    setTimeout(() => window.location.href = 'story.html?id=' + id, 1500);
+  }
+
   db.auth.onAuthStateChange((event, session) => {
     currentUser = session?.user || null;
-    if (currentUser) {
-      renderForm(currentUser);
-    }
+    if (currentUser) loadEditStory(currentUser);
   });
 
   db.auth.getSession().then(({ data: { session } }) => {
     currentUser = session?.user || null;
-    if (currentUser) {
-      renderForm(currentUser);
-    }
+    if (currentUser) loadEditStory(currentUser);
   });
 </script>
 </body>

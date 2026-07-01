@@ -507,6 +507,12 @@
   }
 
 
+  async function memberDeleteThisStory(id) {
+    if (!confirm('Delete your story permanently? This cannot be undone.')) return;
+    await db.from('Stories').delete().eq('id', id).eq('user_id', currentUser.id);
+    window.location.href = 'stories.html';
+  }
+
   async function adminDeleteThisStory(id) {
     if (!confirm('Delete this story permanently? You will be returned to the home page.')) return;
     await db.from('Stories').delete().eq('id', id);
@@ -575,8 +581,12 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M5 12l7-7M5 12l7 7"/></svg>
             Back to all stories
           </a>
-          <div style="display:flex; gap:0.75rem;">
+          <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
             ${isAdmin() ? `<button class="admin-delete-story" onclick="adminDeleteThisStory(${s.id})">Delete story</button>` : ''}
+            ${!isAdmin() && currentUser && currentUser.id === s.user_id ? `
+              <a href="write.html?id=${s.id}" style="font-size:0.8125rem; color:var(--terra-mid); border:1px solid var(--border-soft); padding:8px 18px; border-radius:100px; text-decoration:none;">Edit story</a>
+              <button style="font-size:0.8125rem; color:#A32D2D; background:#FCEBEB; border:1px solid #f0c0c0; padding:8px 18px; border-radius:100px; cursor:pointer; font-family:Inter,sans-serif;" onclick="memberDeleteThisStory(${s.id})">Delete</button>
+            ` : ''}
             <button class="share-btn" onclick="shareStory()">Share this story</button>
           </div>
         </div>

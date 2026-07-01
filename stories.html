@@ -63,6 +63,10 @@
   .admin-dropdown.open { display: block; }
   .admin-dropdown button { display: block; width: 100%; text-align: left; padding: 9px 14px; font-size: 0.8125rem; background: none; border: none; cursor: pointer; color: #A32D2D; font-family: 'Inter', sans-serif; }
   .admin-dropdown button:hover { background: #FCEBEB; }
+  .member-dropdown button { display: block; width: 100%; text-align: left; padding: 9px 14px; font-size: 0.8125rem; background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; color: var(--text-mid); }
+  .member-dropdown button:hover { background: var(--terra-cream); }
+  .member-dropdown button.danger { color: #A32D2D; }
+  .member-dropdown button.danger:hover { background: #FCEBEB; }
 
   .write-cta-bar { background: var(--terra-cream); border: 1px solid var(--border-soft); border-radius: 16px; padding: 1.5rem 2rem; margin-bottom: 2.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
   .write-cta-bar p { font-size: 0.9375rem; color: var(--text-mid); }
@@ -156,6 +160,13 @@
   }
   document.addEventListener('click', () => { document.querySelectorAll('.admin-dropdown').forEach(m => m.classList.remove('open')); });
 
+  async function memberDeleteStory(id) {
+    if (!confirm('Delete your story permanently? This cannot be undone.')) return;
+    await db.from('Stories').delete().eq('id', id).eq('user_id', currentUser.id);
+    loadStories();
+    showToast('Story deleted.');
+  }
+
   async function adminDeleteStory(id) {
     if (!confirm('Delete this story permanently?')) return;
     await db.from('Stories').delete().eq('id', id);
@@ -172,7 +183,7 @@
     }
     grid.innerHTML = data.map(s => `
       <div class="story-card">
-        ${isAdmin() ? `<div class="admin-menu-wrap"><button class="admin-menu-btn" onclick="toggleAdminMenu(event, 'story-${s.id}')">⋯</button><div class="admin-dropdown" id="adm-story-${s.id}"><button onclick="adminDeleteStory(${s.id})">Delete story</button></div></div>` : ''}
+        ${isAdmin() ? `<div class="admin-menu-wrap"><button class="admin-menu-btn" onclick="toggleAdminMenu(event, 'story-${s.id}')">⋯</button><div class="admin-dropdown" id="adm-story-${s.id}"><button onclick="adminDeleteStory(${s.id})">Delete story</button></div></div>` : (currentUser && currentUser.id === s.user_id ? `<div class="admin-menu-wrap"><button class="admin-menu-btn" onclick="toggleAdminMenu(event, 'ms-${s.id}')">⋯</button><div class="admin-dropdown member-dropdown" id="adm-ms-${s.id}"><button onclick="window.location.href='write.html?id=${s.id}'">Edit story</button><button class="danger" onclick="memberDeleteStory(${s.id})">Delete</button></div></div>` : '')}
         <div class="story-card-top"></div>
         <div class="story-card-body">
           <span class="story-lang">${s.language || 'Unknown'}</span>

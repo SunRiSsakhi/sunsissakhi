@@ -63,6 +63,10 @@
   .admin-dropdown.open { display: block; }
   .admin-dropdown button { display: block; width: 100%; text-align: left; padding: 9px 14px; font-size: 0.8125rem; background: none; border: none; cursor: pointer; color: #A32D2D; font-family: 'Inter', sans-serif; }
   .admin-dropdown button:hover { background: #FCEBEB; }
+  .member-dropdown button { display: block; width: 100%; text-align: left; padding: 9px 14px; font-size: 0.8125rem; background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; color: var(--text-mid); }
+  .member-dropdown button:hover { background: var(--terra-cream); }
+  .member-dropdown button.danger { color: #A32D2D; }
+  .member-dropdown button.danger:hover { background: #FCEBEB; }
 
   .loading-msg { text-align: center; padding: 4rem; color: var(--text-muted); font-size: 0.9375rem; grid-column: 1/-1; }
   .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--terra-deep); color: white; padding: 12px 24px; border-radius: 100px; font-size: 0.9375rem; z-index: 300; transition: transform 0.3s; pointer-events: none; }
@@ -145,6 +149,13 @@
   }
   document.addEventListener('click', () => { document.querySelectorAll('.admin-dropdown').forEach(m => m.classList.remove('open')); });
 
+  async function memberDeleteWork(id) {
+    if (!confirm('Delete your work permanently? This cannot be undone.')) return;
+    await db.from('work').delete().eq('id', id).eq('user_id', currentUser.id);
+    loadWork();
+    showToast('Work deleted.');
+  }
+
   async function adminDeleteWork(id) {
     if (!confirm('Delete this work permanently?')) return;
     await db.from('work').delete().eq('id', id);
@@ -161,7 +172,7 @@
     }
     grid.innerHTML = data.map(w => `
       <div class="work-card">
-        ${isAdmin() ? `<div class="admin-menu-wrap"><button class="admin-menu-btn" onclick="toggleAdminMenu(event, 'work-${w.id}')">⋯</button><div class="admin-dropdown" id="adm-work-${w.id}"><button onclick="adminDeleteWork(${w.id})">Delete work</button></div></div>` : ''}
+        ${isAdmin() ? `<div class="admin-menu-wrap"><button class="admin-menu-btn" onclick="toggleAdminMenu(event, 'work-${w.id}')">⋯</button><div class="admin-dropdown" id="adm-work-${w.id}"><button onclick="adminDeleteWork(${w.id})">Delete work</button></div></div>` : (currentUser && currentUser.id === w.user_id ? `<div class="admin-menu-wrap"><button class="admin-menu-btn" onclick="toggleAdminMenu(event, 'mw-${w.id}')">⋯</button><div class="admin-dropdown member-dropdown" id="adm-mw-${w.id}"><button onclick="window.location.href='work.html?id=${w.id}'">Edit work</button><button class="danger" onclick="memberDeleteWork(${w.id})">Delete</button></div></div>` : '')}
         <img src="${w.image_url}" class="work-card-img" alt="${w.title}">
         <div class="work-card-body">
           <p class="work-type">${w.category || 'Work'}</p>

@@ -302,14 +302,85 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  const editWorkId = new URLSearchParams(window.location.search).get('id');
+
+  async function loadEditWork(user) {
+    renderForm(user);
+    if (!editWorkId) return;
+
+    const eyebrow = document.querySelector('.page-eyebrow');
+    const h1 = document.querySelector('.page-title');
+    if (eyebrow) eyebrow.textContent = 'Edit your work';
+    if (h1) h1.innerHTML = 'Update what you have shared.';
+
+    const { data, error } = await db.from('work').select('*').eq('id', editWorkId).eq('user_id', user.id).single();
+    if (error || !data) { showToast('Work not found or not yours.'); return; }
+
+    document.getElementById('w-title') && (document.getElementById('w-title').value = data.title || '');
+    document.getElementById('w-location') && (document.getElementById('w-location').value = data.location || '');
+    document.getElementById('w-description') && (document.getElementById('w-description').value = data.description || '');
+    const cat = document.getElementById('w-category');
+    if (cat) cat.value = data.category || '';
+
+    // Show existing image
+    document.getElementById('upload-area').innerHTML = `
+      <div class="preview-wrap">
+        <img src="${data.image_url}" class="preview-img" alt="${data.title}">
+        <p style="text-align:center; font-size:0.8125rem; color:var(--text-muted); padding:0.5rem;">Current image — upload a new one to replace it</p>
+      </div>
+      <div style="margin-top:1rem;">
+        <div class="upload-zone" onclick="document.getElementById('file-input-new').click()" style="padding:1.5rem;">
+          <p class="upload-zone-text" style="margin:0;">Replace image (optional)</p>
+          <input type="file" id="file-input-new" accept="image/*" onchange="handleFileSelect(event)" style="display:none;">
+        </div>
+      </div>
+    `;
+
+    const btn = document.getElementById('submit-btn');
+    if (btn) {
+      btn.textContent = 'Save changes';
+      btn.onclick = () => saveEditWork(editWorkId, data.image_url);
+    }
+  }
+
+  async function saveEditWork(id, existingImageUrl) {
+    const title = document.getElementById('w-title')?.value.trim();
+    const location = document.getElementById('w-location')?.value.trim();
+    const description = document.getElementById('w-description')?.value.trim();
+    const category = document.getElementById('w-category')?.value;
+
+    if (!title) { showToast('Please give your work a title.'); return; }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = 'Saving...';
+
+    let imageUrl = existingImageUrl;
+
+    if (selectedFile) {
+      const ext = selectedFile.name.split('.').pop();
+      const fileName = `${currentUser.id}_${Date.now()}.${ext}`;
+      const { error: uploadError } = await db.storage.from('work-images').upload(fileName, selectedFile);
+      if (uploadError) { btn.disabled = false; btn.textContent = 'Save changes'; showToast('Image upload failed.'); return; }
+      const { data: urlData } = db.storage.from('work-images').getPublicUrl(fileName);
+      imageUrl = urlData.publicUrl;
+    }
+
+    const { error } = await db.from('work').update({ title, location: location || '', description: description || '', category: category || 'Other', image_url: imageUrl }).eq('id', id).eq('user_id', currentUser.id);
+
+    btn.disabled = false; btn.textContent = 'Save changes';
+    if (error) { showToast('Something went wrong.'); return; }
+    showToast('Work updated successfully.');
+    setTimeout(() => window.location.href = 'work-gallery.html', 1500);
+  }
+
   db.auth.onAuthStateChange((event, session) => {
     currentUser = session?.user || null;
-    if (currentUser) renderForm(currentUser);
+    if (currentUser) loadEditWork(currentUser);
   });
 
   db.auth.getSession().then(({ data: { session } }) => {
     currentUser = session?.user || null;
-    if (currentUser) renderForm(currentUser);
+    if (currentUser) loadEditWork(currentUser);
   });
 </script>
 </body>
