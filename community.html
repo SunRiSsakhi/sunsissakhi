@@ -164,6 +164,9 @@
   .btn-submit-suggest { padding: 10px 24px; border-radius: 100px; background: var(--terra-mid); border: none; color: white; font-size: 0.875rem; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; }
   .btn-submit-suggest:hover { background: var(--terra-deep); }
 
+  .post-translate { font-size: 0.75rem; color: var(--text-muted); text-decoration: none; display: inline-flex; align-items: center; gap: 3px; margin-left: 0.5rem; }
+  .post-translate:hover { color: var(--terra-mid); }
+
   .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--terra-deep); color: white; padding: 12px 24px; border-radius: 100px; font-size: 0.9375rem; z-index: 300; transition: transform 0.3s; pointer-events: none; }
   .toast.show { transform: translateX(-50%) translateY(0); }
 
@@ -454,6 +457,7 @@
             </div>
           </div>
           <p class="post-content">${escapeHtml(p.content)}</p>
+          <a class="post-translate" href="https://translate.google.com/?sl=auto&tl=en&text=${encodeURIComponent(p.content)}&op=translate" target="_blank" rel="noopener">🌐 Translate</a>
           <div class="reactions-row" id="reactions-${p.id}">
             ${Object.entries(grouped).map(([emoji, count]) => `
               <button class="reaction-chip ${myReactions.includes(emoji) ? 'mine' : ''}" onclick="toggleReaction(${p.id}, '${emoji}')">${emoji} <span>${count}</span></button>
@@ -606,6 +610,7 @@
             </div>
           </div>
           <p class="post-content">${escapeHtml(p.content)}</p>
+          <a class="post-translate" href="https://translate.google.com/?sl=auto&tl=en&text=${encodeURIComponent(p.content)}&op=translate" target="_blank" rel="noopener">🌐 Translate</a>
           <div class="reactions-row">
             ${Object.entries(grouped).map(([emoji, count]) => `
               <button class="reaction-chip ${myReactions.includes(emoji) ? 'mine' : ''}" onclick="toggleRoomReaction(${p.id}, '${emoji}', ${roomId})">${emoji} <span>${count}</span></button>

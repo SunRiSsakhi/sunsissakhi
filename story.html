@@ -211,6 +211,9 @@
   .admin-delete-comment { position: absolute; top: 14px; right: 14px; background: none; border: none; color: #A32D2D; font-size: 0.8125rem; cursor: pointer; opacity: 0.6; }
   .admin-delete-comment:hover { opacity: 1; }
 
+  .translate-btn { display: inline-flex; align-items: center; gap: 6px; font-size: 0.875rem; color: var(--text-muted); text-decoration: none; border: 1px solid var(--border-soft); border-radius: 100px; padding: 6px 16px; transition: all 0.2s; margin-top: 1.5rem; }
+  .translate-btn:hover { border-color: var(--terra-mid); color: var(--terra-mid); }
+
   /* FOOTER */
   footer { background: var(--text-dark); color: rgba(255,255,255,0.5); padding: 2rem; text-align: center; font-size: 0.8125rem; }
   .footer-logo { font-family: 'Playfair Display', serif; font-size: 1.125rem; color: white; margin-bottom: 0.25rem; }
@@ -556,6 +559,7 @@
         </div>
         <div class="story-accent"></div>
         <div class="story-body">${escapeHtml(s.content)}</div>
+        <a class="translate-btn" href="https://translate.google.com/?sl=auto&tl=en&text=${encodeURIComponent((s.title ? s.title + ': ' : '') + s.content)}&op=translate" target="_blank" rel="noopener">🌐 Translate to English</a>
         <div class="like-bar">
           <span class="like-label">Was this story meaningful to you?</span>
           <button class="like-btn" id="sp-like" onclick="vote(${s.id}, 1)">👍 <span id="sp-lc">0</span></button>
