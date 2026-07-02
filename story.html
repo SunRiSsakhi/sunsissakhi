@@ -582,11 +582,10 @@
             Back to all stories
           </a>
           <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
-            ${isAdmin() ? `<button class="admin-delete-story" onclick="adminDeleteThisStory(${s.id})">Delete story</button>` : ''}
-            ${!isAdmin() && currentUser && currentUser.id === s.user_id ? `
+            ${currentUser && currentUser.id === s.user_id ? `
               <a href="write.html?id=${s.id}" style="font-size:0.8125rem; color:var(--terra-mid); border:1px solid var(--border-soft); padding:8px 18px; border-radius:100px; text-decoration:none;">Edit story</a>
-              <button style="font-size:0.8125rem; color:#A32D2D; background:#FCEBEB; border:1px solid #f0c0c0; padding:8px 18px; border-radius:100px; cursor:pointer; font-family:Inter,sans-serif;" onclick="memberDeleteThisStory(${s.id})">Delete</button>
             ` : ''}
+            ${isAdmin() ? `<button class="admin-delete-story" onclick="adminDeleteThisStory(${s.id})">Delete story</button>` : (currentUser && currentUser.id === s.user_id ? `<button style="font-size:0.8125rem; color:#A32D2D; background:#FCEBEB; border:1px solid #f0c0c0; padding:8px 18px; border-radius:100px; cursor:pointer; font-family:Inter,sans-serif;" onclick="memberDeleteThisStory(${s.id})">Delete</button>` : '')}
             <button class="share-btn" onclick="shareStory()">Share this story</button>
           </div>
         </div>
