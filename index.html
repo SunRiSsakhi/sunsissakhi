@@ -50,6 +50,13 @@
   .auth-divider span { font-size: 0.8125rem; color: var(--text-muted); }
   .btn-google { width: 100%; padding: 11px; border: 1.5px solid var(--border-soft); border-radius: 10px; background: white; font-size: 0.9375rem; font-family: 'Inter', sans-serif; color: var(--text-dark); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: border-color 0.2s; }
   .btn-google:hover { border-color: var(--terra-mid); }
+  .signup-confirm { text-align: center; padding: 1rem 0.5rem; }
+  .signup-confirm-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+  .signup-confirm-title { font-family: 'Playfair Display', serif; font-size: 1.375rem; font-weight: 500; color: var(--text-dark); margin-bottom: 0.75rem; }
+  .signup-confirm-msg { font-size: 0.9375rem; color: var(--text-mid); line-height: 1.75; margin-bottom: 0.75rem; }
+  .signup-confirm-email { font-weight: 600; color: var(--terra-deep); }
+  .signup-confirm-note { font-size: 0.8125rem; color: var(--text-muted); line-height: 1.6; background: var(--terra-cream); border-radius: 10px; padding: 0.875rem 1rem; margin-top: 1rem; }
+
   .auth-switch { text-align: center; font-size: 0.8125rem; color: var(--text-muted); margin-top: 1rem; }
   .auth-switch a { color: var(--terra-mid); cursor: pointer; text-decoration: none; }
   .auth-switch a:hover { color: var(--terra-deep); }
@@ -671,8 +678,23 @@
 
     if (error) { errEl.textContent = error.message; errEl.style.display = 'block'; return; }
 
-    closeAuthModal();
-    showToast('Welcome to SunRi-Ssakhi! Check your email to confirm your account.');
+    // Show confirmation inside modal instead of closing it
+    const authModal = document.querySelector('#auth-modal .modal');
+    if (authModal) {
+      authModal.innerHTML = `
+        <div class="signup-confirm">
+          <div class="signup-confirm-icon">📩</div>
+          <h2 class="signup-confirm-title">Almost there, ${name}!</h2>
+          <p class="signup-confirm-msg">We have sent a confirmation email to:<br><span class="signup-confirm-email">${email}</span></p>
+          <p class="signup-confirm-msg">Please open that email and click the confirmation link to activate your account. It only takes a second.</p>
+          <div class="signup-confirm-note">
+            Can't find it? Check your spam or junk folder.<br>
+            The email comes from <strong>noreply@mail.app.supabase.io</strong>
+          </div>
+          <button class="btn-primary" style="margin-top:1.5rem;" onclick="closeAuthModal()">Got it</button>
+        </div>
+      `;
+    }
   }
 
 
